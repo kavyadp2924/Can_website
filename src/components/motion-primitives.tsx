@@ -57,19 +57,20 @@ export function Reveal({
 }
 
 /**
- * Card with a cursor-following spotlight and optional perspective tilt. The
- * lighting tracks the pointer with damping; the tilt is restrained (max ~8°).
- * Disabled for reduced-motion and touch. `calm` drops the tilt for cards that
- * should read as quieter in the visual rhythm.
+ * Card with a cursor-following spotlight and a consistent hover "pop" —
+ * a small scale, not a position shift. The card never translates on hover
+ * (no lift, no tilt): the box stays put and the feedback reads instead as a
+ * gentle grow-in-place, a brightening border and a cursor-tracked glow.
+ * Spotlight tracking is disabled for reduced-motion and touch, and the pop
+ * itself is `motion-safe`, so hover state (the border/glow) still shows
+ * without any transform running.
  */
 export function SpotlightCard({
   children,
   className,
-  tilt = true,
 }: {
   children: ReactNode;
   className?: string;
-  tilt?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -79,43 +80,28 @@ export function SpotlightCard({
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const noHover = window.matchMedia('(hover: none)').matches;
-    if (reduced || noHover || !tilt) return;
+    if (reduced || noHover) return;
 
     let raf = 0;
     let mx = 50;
     let my = 50;
     let cmx = 50;
     let cmy = 50;
-    let rx = 0;
-    let ry = 0;
-    let crx = 0;
-    let cry = 0;
 
     const onMove = (event: MouseEvent) => {
       const rect = el.getBoundingClientRect();
       mx = ((event.clientX - rect.left) / rect.width) * 100;
       my = ((event.clientY - rect.top) / rect.height) * 100;
-      if (tilt) {
-        ry = ((event.clientX - (rect.left + rect.width / 2)) / rect.width) * 8;
-        rx = -((event.clientY - (rect.top + rect.height / 2)) / rect.height) * 8;
-      }
     };
     const onLeave = () => {
       mx = 50;
       my = 50;
-      rx = 0;
-      ry = 0;
     };
     const loop = () => {
       cmx += (mx - cmx) * 0.15;
       cmy += (my - cmy) * 0.15;
-      crx += (rx - crx) * 0.15;
-      cry += (ry - cry) * 0.15;
       el.style.setProperty('--mx', `${cmx.toFixed(2)}%`);
       el.style.setProperty('--my', `${cmy.toFixed(2)}%`);
-      if (tilt) {
-        el.style.transform = `perspective(900px) rotateX(${crx.toFixed(2)}deg) rotateY(${cry.toFixed(2)}deg)`;
-      }
       raf = requestAnimationFrame(loop);
     };
 
@@ -128,12 +114,19 @@ export function SpotlightCard({
       el.removeEventListener('mouseleave', onLeave);
       cancelAnimationFrame(raf);
     };
-  }, [tilt]);
+  }, []);
 
   return (
     <div
       ref={ref}
-      className={cn('group relative', className)}
+      className={cn(
+        // `hover:z-10` matters: the hover scale grows the card a few pixels past
+        // its grid cell, and without a raised stacking order the next card in
+        // DOM order paints over that overflow, clipping one edge of the card
+        // being hovered.
+        'group relative transition-transform duration-ui ease-ctpl-out hover:z-10 motion-safe:hover:scale-[1.022]',
+        className,
+      )}
       style={{ ['--mx' as string]: '50%', ['--my' as string]: '50%' } as React.CSSProperties}
     >
       <div
@@ -146,11 +139,137 @@ export function SpotlightCard({
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{ boxShadow: 'inset 0 0 0 1px rgba(61,107,255,0.25)' }}
+        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{ boxShadow: 'inset 0 0 0 1.5px rgba(61,107,255,0.45)' }}
       />
+      {/* Diagonal gloss sweep — clipped by the card's own overflow-hidden, so
+          it only reads as a light passing across rather than a static shape. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
+        <div
+          className="absolute -inset-y-1/2 left-[-45%] w-1/4 -skew-x-12 bg-gradient-to-r from-transparent via-[rgba(61,107,255,0.10)] to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[380%]"
+        />
+      </div>
       {children}
     </div>
+  );
+}
+
+/**
+ * Staggered entrance for cards: opacity + translateY, with a small scale so a
+ * card reads as arriving rather than merely appearing. Deliberately restrained —
+ * no rotation and no back-out overshoot, both of which push a card outside its
+ * own grid cell mid-flight and can visually clip its neighbour.
+ */
+export function CardReveal({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** Milliseconds, matching every other reveal component's `delay` prop
+   *  (e.g. `FadeIn`) — converted to seconds internally since that is what
+   *  GSAP's own `delay` expects. */
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduced = usePrefersReducedMotion();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reduced) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from(el, {
+        opacity: 0,
+        y: 30,
+        scale: 0.97,
+        duration: 0.7,
+        delay: delay / 1000,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, [reduced, delay]);
+
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Word-by-word kinetic heading — each word masks up from below on its own
+ * stagger rather than the whole line fading as one block. `accent` renders as
+ * a single trailing gradient chunk (matching `GradientText`) so a two-tone
+ * headline like "Find the failure / on screen, not on site" keeps one
+ * continuous gradient across the accent phrase instead of restarting it per
+ * word. Defined here (not `ui.tsx`) so both `ui.tsx` and `sections.tsx` can
+ * import it without a circular dependency.
+ */
+export function WordReveal({
+  text,
+  accent,
+  as = 'h2',
+  className,
+  shimmer = false,
+}: {
+  text: string;
+  /** Trailing phrase rendered in the brand gradient, as one animated unit. */
+  accent?: string;
+  as?: 'h1' | 'h2' | 'h3';
+  className?: string;
+  shimmer?: boolean;
+}) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const reduced = usePrefersReducedMotion();
+  const words = text.split(' ');
+  const Tag = as;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reduced) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from(el.querySelectorAll('.w-inner'), {
+        yPercent: 115,
+        duration: 0.9,
+        ease: 'power3.out',
+        stagger: 0.07,
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, [reduced, text, accent]);
+
+  return (
+    <Tag ref={ref} className={cn('font-display font-bold leading-[1.05] text-ink', className)}>
+      {words.map((word, i) => (
+        <span key={`w-${word}-${i}`} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+          <span className="w-inner inline-block">{word}</span>
+        </span>
+      )).reduce<React.ReactNode[]>((acc, node, i) => {
+        if (i > 0) acc.push(' ');
+        acc.push(node);
+        return acc;
+      }, [])}
+      {accent && (
+        <>
+          {' '}
+          <span className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+            <span
+              className={cn('w-inner inline-block bg-ctpl-gradient bg-clip-text text-transparent', shimmer && 'animate-shimmer')}
+            >
+              {accent}
+            </span>
+          </span>
+        </>
+      )}
+    </Tag>
   );
 }
 
@@ -232,8 +351,12 @@ export function ScrollLine({
 }
 
 /**
- * Clip + lift reveal for imagery. Wraps a media container; the frame masks in
- * from the bottom while the content settles, reading as "discovery".
+ * Clip reveal for imagery. Wraps a media container; the frame masks in from the
+ * bottom while the content settles, reading as "discovery".
+ *
+ * Deliberately no translate: the frame usually sits directly above its own
+ * caption, and starting it offset downward slides the image over that caption
+ * for the length of the tween. The clip carries the reveal on its own.
  */
 export function ImageReveal({
   children,
@@ -254,7 +377,7 @@ export function ImageReveal({
     const ctx = gsap.context(() => {
       gsap.from(el, {
         clipPath: 'inset(0 0 14% 0)',
-        y: 24,
+        opacity: 0,
         duration: 1,
         delay,
         ease: 'power3.out',

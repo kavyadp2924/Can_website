@@ -2,8 +2,9 @@
 
 /**
  * Route transition. App Router re-mounts this template on every navigation, so
- * a quick fade-and-rise on mount gives continuity between pages without a
- * loading screen.
+ * a directional mask-wipe on mount gives continuity between pages without a
+ * loading screen — the incoming page unmasks top-down rather than simply
+ * fading, which reads as an assembled reveal instead of a blink.
  *
  * The reveal is a pure CSS animation (gated by motion-safe) rather than a
  * JS-controlled opacity state — that way the incoming page can never get stuck
@@ -13,7 +14,7 @@
  */
 export default function Template({ children }: { children: React.ReactNode }) {
   return (
-    <div className="motion-safe:animate-[riseIn_0.5s_ease-out]">
+    <div className="motion-safe:animate-[pageReveal_0.55s_cubic-bezier(0.16,1,0.3,1)]">
       {children}
     </div>
   );

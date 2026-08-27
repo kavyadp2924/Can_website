@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { CtaBand, PageHero, Section } from '@/components/ui';
-import { FadeIn } from '@/components/motion';
-import { ImageReveal, MediaFrame, Reveal } from '@/components/motion-primitives';
+import { CardReveal, ImageReveal, MediaFrame, Reveal } from '@/components/motion-primitives';
 
 export const metadata: Metadata = {
   title: 'Work',
@@ -75,33 +74,37 @@ export default function WorkPage() {
       <Section>
         <div className="grid gap-8 lg:grid-cols-12">
           {PROJECTS.map((project, index) => (
-            <FadeIn
+            <CardReveal
               key={project.title}
               delay={(index % 2) * 90}
               className={index % 2 === 0 ? 'lg:col-span-7' : 'lg:col-span-5'}
             >
-              <article className="group flex h-full flex-col">
-                <ImageReveal className="relative aspect-[4/3] overflow-hidden rounded-xl border border-hairline bg-surface shadow-card">
+              <article className="group flex h-full flex-col transition-transform duration-ui ease-ctpl-out motion-safe:hover:scale-[1.015]">
+                <ImageReveal className="relative aspect-[4/3] overflow-hidden rounded-xl border border-hairline bg-surface shadow-card transition-[box-shadow,border-color] duration-ui group-hover:border-card-hover-edge group-hover:shadow-raised">
                   <MediaFrame
                     src={project.image}
                     alt={project.title}
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                    className="absolute inset-0"
+                    className="absolute inset-0 transition-transform duration-[900ms] ease-ctpl-out group-hover:scale-[1.06]"
                   />
-                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-ink backdrop-blur">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 transition-opacity duration-ui group-hover:opacity-100"
+                  />
+                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-ink backdrop-blur transition-transform duration-ui ease-ctpl-out group-hover:-translate-y-0.5">
                     {project.discipline}
                   </span>
                 </ImageReveal>
                 <div className="pt-5">
                   <Reveal>
-                    <h2 className="font-display text-xl font-semibold leading-snug text-ink">
+                    <h2 className="inline bg-[linear-gradient(currentColor,currentColor)] bg-left-bottom bg-[length:0%_1px] bg-no-repeat pb-0.5 font-display text-xl font-semibold leading-snug text-ink transition-[background-size] duration-ui ease-ctpl-out group-hover:bg-[length:100%_1px]">
                       {project.title}
                     </h2>
                   </Reveal>
                   <p className="mt-2 text-sm leading-relaxed text-ink-muted">{project.outcome}</p>
                 </div>
               </article>
-            </FadeIn>
+            </CardReveal>
           ))}
         </div>
       </Section>

@@ -67,14 +67,16 @@ export function ProcessRail({
 
   return (
     <div ref={root} className={cn('relative', className)}>
+      {/* Rail offsets are the node centres exactly: the marker is 2.25rem wide
+          (centre 1.125rem) and 2.5rem at sm (centre 1.25rem). */}
       <div
         aria-hidden="true"
-        className="absolute bottom-4 left-[1.15rem] top-4 w-px bg-hairline sm:left-[1.4rem]"
+        className="absolute bottom-4 left-[1.125rem] top-4 w-px bg-hairline sm:left-[1.25rem]"
       />
       <div
         data-rail-line
         aria-hidden="true"
-        className="absolute left-[1.15rem] top-4 h-[calc(100%-2rem)] w-px origin-top bg-ctpl-gradient sm:left-[1.4rem]"
+        className="absolute left-[1.125rem] top-4 h-[calc(100%-2rem)] w-px origin-top bg-ctpl-gradient sm:left-[1.25rem]"
         style={{ transform: reduced ? undefined : 'scaleY(0)' }}
       />
 

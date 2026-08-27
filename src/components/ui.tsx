@@ -4,8 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 import { FadeIn, Parallax } from './motion';
 import { usePrefersReducedMotion } from './motion';
-import { useMagnetic } from '@/lib/use-magnetic';
-import { Reveal, ScrollBackdrop, SpotlightCard } from './motion-primitives';
+import { CardReveal, Reveal, ScrollBackdrop, SpotlightCard, WordReveal } from './motion-primitives';
 
 /* ────────────────────────────────────────────────── typography ── */
 
@@ -100,6 +99,15 @@ export function BracketMotif({
 
 /* ─────────────────────────────────────────────────── buttons ── */
 
+/**
+ * Primary call to action.
+ *
+ * The button itself is deliberately static: it does not move toward the
+ * cursor, scale, or brighten on hover. Only the arrow travels. A filled
+ * gradient button that also shifts and lightens under the pointer reads as
+ * unstable, and the magnetic pull it used to have made the whole row of
+ * buttons twitch as the cursor crossed it.
+ */
 export function PrimaryLink({
   href,
   children,
@@ -109,13 +117,11 @@ export function PrimaryLink({
   children: ReactNode;
   className?: string;
 }) {
-  const ref = useMagnetic<HTMLAnchorElement>(0.3);
   return (
     <a
-      ref={ref}
       href={href}
       className={cn(
-        'group inline-flex h-12 items-center justify-center gap-2 rounded bg-ctpl-gradient px-7 text-sm font-semibold text-white shadow-cta transition-[filter,transform] duration-ui ease-ctpl-out hover:brightness-110',
+        'group inline-flex h-12 items-center justify-center gap-2 rounded bg-ctpl-fill px-7 text-sm font-semibold text-white shadow-cta',
         className,
       )}
     >
@@ -134,6 +140,7 @@ export function PrimaryLink({
   );
 }
 
+/** Secondary action. Static like `PrimaryLink`; only the arrow moves. */
 export function SecondaryLink({
   href,
   children,
@@ -143,13 +150,11 @@ export function SecondaryLink({
   children: ReactNode;
   className?: string;
 }) {
-  const ref = useMagnetic<HTMLAnchorElement>(0.25);
   return (
     <a
-      ref={ref}
       href={href}
       className={cn(
-        'group inline-flex h-12 items-center justify-center gap-2 rounded border border-border-strong bg-white/80 px-7 text-sm font-semibold text-ink backdrop-blur transition-colors duration-ui hover:bg-white',
+        'group inline-flex h-12 items-center justify-center gap-2 rounded border border-border-strong bg-white px-7 text-sm font-semibold text-ink',
         className,
       )}
     >
@@ -193,11 +198,13 @@ export function PageHero({
 
       <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <Reveal clip>
-          <h1 className="mt-4 font-display text-display font-bold leading-[1.12] text-ink sm:text-display-lg">
-            {title} {accent && <GradientText shimmer>{accent}</GradientText>}
-          </h1>
-        </Reveal>
+        <WordReveal
+          as="h1"
+          text={title}
+          accent={accent}
+          shimmer
+          className="mt-4 text-display leading-[1.12] sm:text-display-lg"
+        />
         {intro && (
           <FadeIn delay={120}>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-secondary">{intro}</p>
@@ -210,7 +217,12 @@ export function PageHero({
 }
 
 /** The section heading block — a mask reveal for the title, calm fade for the
- *  supporting copy. One consistent entrance across the whole site. */
+ *  supporting copy. One consistent entrance across the whole site.
+ *
+ *  Carries its own bottom margin: it is always followed by section content, and
+ *  every caller having to remember `mb-12` meant that anything rendering the
+ *  heading through `Section` got no gap at all and sat flush against its cards.
+ *  `cn` runs through tailwind-merge, so a caller can still override it. */
 export function SectionHeading({
   eyebrow,
   title,
@@ -223,29 +235,45 @@ export function SectionHeading({
   title?: string;
   intro?: string;
   align?: 'left' | 'center';
-  /** Large, faint chapter number behind the eyebrow (decorative). */
+  /** Chapter number, set inline before the eyebrow. */
   index?: string;
   className?: string;
 }) {
   return (
-    <Reveal clip className={cn('max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
-      {index && (
-        <span
-          aria-hidden="true"
-          className="block font-display text-6xl font-bold leading-none sm:text-7xl"
-          style={{ color: 'var(--ctpl-text)', opacity: 0.05 }}
-        >
-          {index}
-        </span>
+    <div className={cn('mb-12 max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
+      {/* The index sits on the eyebrow line rather than above it as an oversized
+          numeral. As a display-size number tinted `--ctpl-text` at 5% opacity it
+          was both an off-palette warm grey — near-invisible, and unrelated to any
+          brand colour — and a whole empty band of page above every heading. Set
+          in the brand blue at the eyebrow's own size, it reads as a chapter mark
+          and costs no vertical space. */}
+      {(eyebrow || index) && (
+        <Reveal>
+          <p
+            className={cn(
+              'flex items-center gap-2.5 text-eyebrow uppercase tracking-eyebrow text-link',
+              align === 'center' && 'justify-center',
+            )}
+          >
+            {index && (
+              <>
+                <span aria-hidden="true" className="font-mono font-bold">
+                  {index}
+                </span>
+                <span aria-hidden="true" className="h-3 w-px bg-card-hover-edge" />
+              </>
+            )}
+            {eyebrow}
+          </p>
+        </Reveal>
       )}
-      {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-      {title && (
-        <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">{title}</h2>
-      )}
+      {title && <WordReveal text={title} className="mt-3 text-3xl sm:text-4xl" />}
       {intro && (
-        <p className="mt-4 text-base leading-relaxed text-ink-secondary">{intro}</p>
+        <Reveal delay={0.1}>
+          <p className="mt-4 text-base leading-relaxed text-ink-secondary">{intro}</p>
+        </Reveal>
       )}
-    </Reveal>
+    </div>
   );
 }
 
@@ -301,7 +329,7 @@ export function FeatureGrid({
 }: {
   items: Array<{ title: string; desc: string }>;
   columns?: 2 | 3;
-  /** spotlight = cursor + tilt (lively); calm = static frame (quieter). */
+  /** spotlight = cursor glow + colour response (lively); calm = static frame (quieter). */
   variant?: 'spotlight' | 'calm';
 }) {
   return (
@@ -312,10 +340,11 @@ export function FeatureGrid({
       )}
     >
       {items.map((item, index) => (
-        // Staggered so a row assembles rather than snapping in as one block.
-        <FadeIn key={item.title} delay={index * 70}>
-          <SpotlightCard className="h-full" tilt={variant === 'spotlight'}>
-            <article className="relative h-full overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-shadow duration-ui group-hover:shadow-raised">
+        // Popped in with a stagger so a row assembles rather than snapping in
+        // as one block.
+        <CardReveal key={item.title} delay={index * 70} className="h-full">
+          <SpotlightCard className={cn('h-full', variant === 'calm' && 'motion-safe:hover:scale-100')}>
+            <article className="relative h-full overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
               {/* Persistent faint brand line + a brighter one that draws on hover */}
               <span
                 aria-hidden="true"
@@ -323,13 +352,21 @@ export function FeatureGrid({
               />
               <span
                 aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-ctpl-gradient transition-transform duration-ui group-hover:scale-x-100"
+                className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-ctpl-gradient transition-transform duration-ui ease-ctpl-out group-hover:scale-x-100"
               />
-              <h3 className="font-display text-lg font-semibold text-ink">{item.title}</h3>
+              <span
+                aria-hidden="true"
+                className="mb-3 block font-mono text-xs font-bold text-link opacity-0 transition-opacity duration-ui group-hover:opacity-100"
+              >
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3 className="font-display text-lg font-semibold text-ink transition-colors duration-ui group-hover:text-link">
+                {item.title}
+              </h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-muted">{item.desc}</p>
             </article>
           </SpotlightCard>
-        </FadeIn>
+        </CardReveal>
       ))}
     </div>
   );
@@ -345,12 +382,14 @@ export function FeatureList({ items }: { items: Array<{ title: string; desc: str
     <div className="border-y border-hairline">
       {items.map((item, index) => (
         <FadeIn key={item.title} delay={index * 60}>
-          <div className="group relative grid gap-2 py-7 sm:grid-cols-[16rem_1fr] sm:gap-10">
+          <div className="group relative grid gap-2 py-7 transition-[padding] duration-ui ease-ctpl-out hover:pl-3 sm:grid-cols-[16rem_1fr] sm:gap-10">
             <span
               aria-hidden="true"
               className="absolute left-0 top-0 h-0.5 w-0 bg-ctpl-gradient transition-[width] duration-ui ease-ctpl-out group-hover:w-full"
             />
-            <h3 className="font-display text-xl font-semibold text-ink">{item.title}</h3>
+            <h3 className="font-display text-xl font-semibold text-ink transition-colors duration-ui group-hover:text-link">
+              {item.title}
+            </h3>
             <p className="text-sm leading-relaxed text-ink-muted">{item.desc}</p>
           </div>
         </FadeIn>
