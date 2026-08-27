@@ -49,18 +49,20 @@ export function Hero() {
     if (reduced) return;
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      tl.from('[data-hero="eyebrow"]', { opacity: 0, y: 14, duration: 0.6 })
-        .from('[data-hero="bracket-l"]', { opacity: 0, duration: 0.9 }, 0)
-        .from('[data-hero="bracket-r"]', { opacity: 0, duration: 0.9 }, 0)
-        .from(canvasWrapRef.current, { opacity: 0, duration: 1.3 }, 0.1)
+      tl.from('[data-hero="grid"]', { opacity: 0, duration: 1.1 })
+        .from('[data-hero="eyebrow"]', { opacity: 0, y: 14, duration: 0.6 }, 0.15)
+        .from('[data-hero="bracket-l"]', { opacity: 0, duration: 0.9 }, 0.15)
+        .from('[data-hero="bracket-r"]', { opacity: 0, duration: 0.9 }, 0.15)
+        .from(canvasWrapRef.current, { opacity: 0, scale: 0.94, duration: 1.3 }, 0.3)
         .from(
           '[data-hero="line"]',
           { yPercent: 120, opacity: 0, duration: 1, stagger: 0.12, ease: 'power4.out' },
-          0.25,
+          0.45,
         )
         .from('[data-hero="sub"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
         .from('[data-hero="cta"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
-        .from('[data-hero="meta"]', { opacity: 0, y: 14, duration: 0.6 }, '-=0.5');
+        .from('[data-hero="meta"]', { opacity: 0, y: 14, duration: 0.6 }, '-=0.5')
+        .from('[data-hero="tech"]', { opacity: 0, x: 12, duration: 0.7 }, '-=0.45');
     }, sectionRef);
     return () => ctx.revert();
   }, [reduced]);
@@ -78,6 +80,7 @@ export function Hero() {
       />
       <AmbientField className="opacity-70" />
       <div
+        data-hero="grid"
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 motion-safe:animate-[washDrift_20s_ease-in-out_infinite]"
       >
@@ -99,9 +102,25 @@ export function Hero() {
         ref={canvasWrapRef}
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-70 lg:left-1/3 lg:opacity-100"
-        style={{ transform: 'translate3d(calc(var(--px, 0) * 34px), calc(var(--py, 0) * 34px), 0)' }}
       >
+        {/* No CSS-driven parallax here — the scene's own camera responds to the
+            pointer and to scroll in true 3D, which reads as depth rather than a
+            flat layer sliding on top of another. */}
         {showScene && <HeroScene />}
+      </div>
+
+      {/* Technical readout — reinforces "engineering viewport" rather than
+          decorative 3D art. Purely atmospheric; no content lives only here. */}
+      <div
+        data-hero="tech"
+        aria-hidden="true"
+        className="pointer-events-none absolute right-6 top-24 hidden select-none font-mono text-[11px] uppercase tracking-eyebrow text-ink-subtle sm:right-8 lg:block"
+      >
+        <p className="flex items-center gap-2">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand-red motion-safe:animate-[pulseDot_2.4s_ease-in-out_infinite]" />
+          Mesh · analysis live
+        </p>
+        <p className="mt-1 opacity-70">node.count 6 · shell.div 1</p>
       </div>
 
       <div

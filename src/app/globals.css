@@ -160,6 +160,15 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Absorbs the few pixels of transform-based overflow that an off-screen
+       entrance animation (e.g. a FadeIn sliding in from the left, or the
+       hero's oversized bracket motif) can contribute to scrollWidth.
+       `overflow-x: clip` does not reliably suppress viewport-level horizontal
+       scroll in every engine, so this uses the traditional `hidden`, which
+       does — the vertical axis promotes to `auto` as a result, which is a
+       no-op here: the root element was already the page's scrolling box, and
+       neither Lenis nor `position: sticky` distinguish that from the default. */
+    overflow-x: hidden;
   }
 
   body {
@@ -220,6 +229,21 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Route transition — a directional mask wipe rather than a plain fade, so
+   navigating between pages reads as one continuous reveal instead of a blink. */
+@keyframes pageReveal {
+  from {
+    opacity: 0;
+    clip-path: inset(8% 0 0 0);
+    transform: translateY(14px) scale(0.994);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: translateY(0) scale(1);
   }
 }
 

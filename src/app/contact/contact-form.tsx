@@ -59,8 +59,16 @@ export function ContactForm() {
     return (
       <div
         role="status"
-        className="rounded-lg border border-success/20 bg-success-bg p-8 text-center"
+        className="motion-safe:animate-[riseIn_0.5s_ease-out] rounded-lg border border-success/20 bg-success-bg p-8 text-center"
       >
+        <span
+          aria-hidden="true"
+          className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-success/15 motion-safe:animate-[riseIn_0.6s_cubic-bezier(0.16,1,0.3,1)]"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-5 w-5 text-success">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l4.5 4.5L19 7" />
+          </svg>
+        </span>
         <p className="font-display text-lg font-semibold text-success">Message sent</p>
         <p className="mt-2 text-sm text-ink-secondary">
           Thanks — we read every one of these and will get back to you shortly.
@@ -74,7 +82,7 @@ export function ContactForm() {
       {error && (
         <p
           role="alert"
-          className="rounded border border-danger/20 bg-danger-bg px-4 py-3 text-sm font-medium text-danger"
+          className="motion-safe:animate-[riseIn_0.4s_ease-out] rounded border border-danger/20 bg-danger-bg px-4 py-3 text-sm font-medium text-danger"
         >
           {error}
         </p>
@@ -96,7 +104,7 @@ export function ContactForm() {
           name="message"
           required
           rows={6}
-          className="w-full rounded border border-border-strong bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-1"
+          className="w-full rounded border border-border-strong bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-ui ease-ctpl-out focus-visible:outline-none focus-visible:border-brand-blue focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-1"
           placeholder="A couple of sentences is plenty to start."
         />
       </div>
@@ -114,8 +122,19 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="inline-flex h-12 items-center justify-center rounded bg-ctpl-gradient px-8 text-sm font-semibold text-white shadow-cta transition-[filter] hover:brightness-110 disabled:opacity-60"
+        className="inline-flex h-12 items-center justify-center gap-2.5 rounded bg-ctpl-gradient px-8 text-sm font-semibold text-white shadow-cta transition-[filter,transform] duration-ui ease-ctpl-out hover:brightness-110 active:scale-[0.98] disabled:opacity-70"
       >
+        {status === 'sending' && (
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            className="h-4 w-4 motion-safe:animate-spin"
+          >
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={2.5} opacity={0.25} />
+            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
+          </svg>
+        )}
         {status === 'sending' ? 'Sending…' : 'Send message'}
       </button>
     </form>
@@ -147,7 +166,7 @@ function Field({
         type={type}
         required={required}
         autoComplete={autoComplete}
-        className="h-11 w-full rounded border border-border-strong bg-white px-3 text-sm text-ink placeholder:text-ink-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-1"
+        className="h-11 w-full rounded border border-border-strong bg-white px-3 text-sm text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-ui ease-ctpl-out focus-visible:outline-none focus-visible:border-brand-blue focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-1"
       />
     </div>
   );
