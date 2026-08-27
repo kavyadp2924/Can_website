@@ -1,0 +1,5 @@
+User-Agent: *
+Allow: /
+Disallow: /privacy/
+
+Sitemap: https://canorous.com/sitemap.xml

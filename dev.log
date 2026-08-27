@@ -1,0 +1,42 @@
+
+> canorous-public-site@1.0.0 dev
+> next dev --turbopack --port 3000
+
+   ▲ Next.js 15.5.23 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://172.29.240.1:3000
+
+ ✓ Starting...
+ ✓ Ready in 1489ms
+ ○ Compiling / ...
+ ✓ Compiled / in 5.5s
+ GET / 200 in 6130ms
+ ✓ Compiled /work in 357ms
+ GET /work/ 200 in 531ms
+ ✓ Compiled /solutions/engineering in 289ms
+ GET /solutions/engineering/ 200 in 441ms
+ ✓ Compiled /visualization in 459ms
+ GET /visualization/ 200 in 744ms
+ ✓ Compiled /canorous-edge in 294ms
+ GET /canorous-edge/ 200 in 484ms
+ ✓ Compiled /about in 311ms
+ GET /about/ 200 in 454ms
+ ✓ Compiled /contact in 327ms
+ GET /contact/ 200 in 483ms
+ GET /work/ 200 in 186ms
+ GET /work/ 200 in 184ms
+ GET /work/ 200 in 187ms
+ GET / 200 in 394ms
+ GET /work/ 200 in 181ms
+ ○ Compiling /products/presentation ...
+ ✓ Compiled /products/presentation in 557ms
+ GET /products/presentation/ 200 in 905ms
+ GET /solutions/engineering/ 200 in 483ms
+ ✓ Compiled in 97ms
+ ✓ Compiled in 107ms
+ ✓ Compiled in 63ms
+ GET /solutions/engineering/ 200 in 275ms
+ ✓ Compiled in 25ms
+ ✓ Compiled in 32ms
+ ✓ Compiled in 21ms
+ GET /solutions/engineering/ 200 in 587ms
