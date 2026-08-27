@@ -49,6 +49,8 @@ export default {
         },
         hairline: 'var(--ctpl-hairline)',
         'border-strong': 'var(--ctpl-border-strong)',
+        'card-hover': 'var(--ctpl-card-hover-bg)',
+        'card-hover-edge': 'var(--ctpl-card-hover-border)',
         link: {
           DEFAULT: 'var(--ctpl-link)',
           hover: 'var(--ctpl-link-hover)',

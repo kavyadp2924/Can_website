@@ -80,8 +80,8 @@ export default function WorkPage() {
               index={index}
               className={index % 2 === 0 ? 'lg:col-span-7' : 'lg:col-span-5'}
             >
-              <article className="group flex h-full flex-col">
-                <ImageReveal className="relative aspect-[4/3] overflow-hidden rounded-xl border border-hairline bg-surface shadow-card transition-shadow duration-ui group-hover:shadow-raised">
+              <article className="group flex h-full flex-col transition-transform duration-ui ease-ctpl-out motion-safe:hover:scale-[1.015]">
+                <ImageReveal className="relative aspect-[4/3] overflow-hidden rounded-xl border border-hairline bg-surface shadow-card transition-[box-shadow,border-color] duration-ui group-hover:border-card-hover-edge group-hover:shadow-raised">
                   <MediaFrame
                     src={project.image}
                     alt={project.title}

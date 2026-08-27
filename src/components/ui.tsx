@@ -309,7 +309,7 @@ export function FeatureGrid({
 }: {
   items: Array<{ title: string; desc: string }>;
   columns?: 2 | 3;
-  /** spotlight = cursor + tilt (lively); calm = static frame (quieter). */
+  /** spotlight = cursor glow + colour response (lively); calm = static frame (quieter). */
   variant?: 'spotlight' | 'calm';
 }) {
   return (
@@ -323,8 +323,8 @@ export function FeatureGrid({
         // Popped in with a stagger so a row assembles rather than snapping in
         // as one block.
         <CardReveal key={item.title} delay={index * 70} index={index} className="h-full">
-          <SpotlightCard className="h-full" tilt={variant === 'spotlight'}>
-            <article className="relative h-full overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-shadow duration-ui group-hover:shadow-raised">
+          <SpotlightCard className={cn('h-full', variant === 'calm' && 'motion-safe:hover:scale-100')}>
+            <article className="relative h-full overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
               {/* Persistent faint brand line + a brighter one that draws on hover */}
               <span
                 aria-hidden="true"

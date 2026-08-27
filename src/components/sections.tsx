@@ -128,7 +128,7 @@ export function ProcessPipeline({
                       'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white font-mono text-xs font-bold transition-all duration-ui ease-ctpl-out',
                       isActive
                         ? 'scale-110 border-transparent bg-ctpl-gradient text-white shadow-cta'
-                        : 'border-hairline text-ink-subtle group-hover:scale-105 group-hover:border-brand-blue/50 group-hover:text-link',
+                        : 'border-hairline text-ink-subtle group-hover:scale-105 group-hover:border-card-hover-edge group-hover:text-link',
                     )}
                   >
                     {isActive && (
@@ -170,14 +170,26 @@ export function DisciplinesShowcase({
       {items.map((item, i) => (
         <CardReveal key={item.title} delay={i * 70} index={i} className="h-full">
           <SpotlightCard className="h-full">
-            <article className="relative flex h-full flex-col justify-between overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-shadow duration-ui group-hover:shadow-raised">
+            <article className="relative flex h-full flex-col justify-between overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
+              <div className="flex w-full items-start justify-between">
+                <span className="font-mono text-xs font-bold text-link transition-transform duration-ui ease-ctpl-out group-hover:-translate-y-0.5">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  className="h-3.5 w-3.5 -translate-x-1 text-link opacity-0 transition-[transform,opacity] duration-ui ease-ctpl-out group-hover:translate-x-0 group-hover:opacity-100"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </div>
               <span
                 aria-hidden="true"
                 className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-50 bg-ctpl-gradient opacity-40 transition-[transform,opacity] duration-ui ease-ctpl-out group-hover:scale-x-100 group-hover:opacity-100"
               />
-              <span className="font-mono text-xs font-bold text-link transition-transform duration-ui ease-ctpl-out group-hover:-translate-y-0.5">
-                {String(i + 1).padStart(2, '0')}
-              </span>
               <h3 className="mt-2 font-display text-lg font-semibold text-ink transition-colors duration-ui group-hover:text-link">
                 {item.title}
               </h3>
@@ -234,7 +246,7 @@ export function AudiencesShowcase({
       {items.map((item, i) => (
         <CardReveal key={item.title} delay={i * 70} index={i} className="h-full">
           <SpotlightCard className="h-full">
-            <article className="relative h-full overflow-hidden rounded-xl border border-hairline bg-white p-7 shadow-card transition-shadow duration-ui group-hover:shadow-raised">
+            <article className="relative h-full overflow-hidden rounded-xl border border-hairline bg-white p-7 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
               <span
                 aria-hidden="true"
                 className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-50 bg-ctpl-gradient opacity-40 transition-[transform,opacity] duration-ui ease-ctpl-out group-hover:scale-x-100 group-hover:opacity-100"

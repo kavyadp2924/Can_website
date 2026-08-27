@@ -61,6 +61,12 @@
   --ctpl-link: var(--ctpl-blue-700);
   --ctpl-link-hover: var(--ctpl-blue-800);
 
+  /* Card hover state, derived from the brand blue. Kept as concrete rgba()
+     rather than a Tailwind `/opacity` modifier, which cannot apply an alpha to
+     a custom property holding a hex value. */
+  --ctpl-card-hover-bg: rgba(61, 107, 255, 0.05);
+  --ctpl-card-hover-border: rgba(61, 107, 255, 0.5);
+
   --ctpl-success: #0f7a4d;
   --ctpl-success-bg: #e6f5ee;
   --ctpl-danger: #a31414;

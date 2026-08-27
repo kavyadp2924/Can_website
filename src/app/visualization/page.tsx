@@ -11,7 +11,7 @@ import {
   StickySectionNav,
 } from '@/components/ui';
 import { FadeIn } from '@/components/motion';
-import { Reveal, ScrollBackdrop } from '@/components/motion-primitives';
+import { CardReveal, Reveal, ScrollBackdrop, SpotlightCard } from '@/components/motion-primitives';
 import {
   CAPABILITIES,
   PROJECTS,
@@ -108,10 +108,10 @@ export default function VisualizationPage() {
       >
         <div className="space-y-6">
           {PROJECTS.map((project, index) => (
-            <FadeIn key={project.id} delay={index * 90}>
+            <CardReveal key={project.id} delay={index * 90} index={index}>
               <article
                 id={project.id}
-                className="scroll-mt-36 overflow-hidden rounded-xl border border-hairline bg-white shadow-card"
+                className="group scroll-mt-36 overflow-hidden rounded-xl border border-hairline bg-white shadow-card transition-[box-shadow,border-color,background-color,transform] duration-ui ease-ctpl-out hover:border-card-hover-edge hover:bg-card-hover hover:shadow-raised motion-safe:hover:scale-[1.008]"
               >
                 <span aria-hidden="true" className="block h-0.5 bg-ctpl-gradient" />
 
@@ -163,7 +163,7 @@ export default function VisualizationPage() {
                   </div>
                 </div>
               </article>
-            </FadeIn>
+            </CardReveal>
           ))}
         </div>
       </Section>
@@ -203,29 +203,33 @@ export default function VisualizationPage() {
             { name: 'Unreal Engine', items: UNREAL, accent: 'from-brand-red' },
             { name: 'Unity', items: UNITY, accent: 'from-brand-blue' },
           ].map((engine, index) => (
-            <FadeIn key={engine.name} delay={index * 90}>
-              <article className="h-full overflow-hidden rounded-xl border border-hairline bg-white p-7 shadow-card">
-                <span
-                  aria-hidden="true"
-                  className={`mb-5 block h-0.5 bg-gradient-to-r ${engine.accent} to-transparent`}
-                />
-                <h3 className="font-display text-xl font-semibold text-ink">{engine.name}</h3>
-                <ul className="mt-4 space-y-2.5">
-                  {engine.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex gap-2.5 text-sm leading-relaxed text-ink-secondary"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-blue"
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </FadeIn>
+            <CardReveal key={engine.name} delay={index * 90} index={index} className="h-full">
+              <SpotlightCard className="h-full">
+                <article className="h-full overflow-hidden rounded-xl border border-hairline bg-white p-7 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
+                  <span
+                    aria-hidden="true"
+                    className={`mb-5 block h-0.5 bg-gradient-to-r ${engine.accent} to-transparent`}
+                  />
+                  <h3 className="font-display text-xl font-semibold text-ink transition-colors duration-ui group-hover:text-link">
+                    {engine.name}
+                  </h3>
+                  <ul className="mt-4 space-y-2.5">
+                    {engine.items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex gap-2.5 text-sm leading-relaxed text-ink-secondary"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-blue"
+                        />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </SpotlightCard>
+            </CardReveal>
           ))}
         </div>
       </Section>

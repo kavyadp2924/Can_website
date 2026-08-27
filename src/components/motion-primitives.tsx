@@ -57,22 +57,20 @@ export function Reveal({
 }
 
 /**
- * Card with a cursor-following spotlight, optional perspective tilt, and a
- * consistent hover lift. The lighting tracks the pointer with damping; the
- * tilt is restrained (max ~9°), the lift is small (6px tilted, 3px flat) —
- * enough to read as "this responds to you" without feeling like a toy.
- * Disabled for reduced-motion and touch. `tilt=false` keeps the lift and
- * spotlight but drops the rotation, for cards that should read as quieter in
- * the visual rhythm.
+ * Card with a cursor-following spotlight and a consistent hover "pop" —
+ * a small scale, not a position shift. The card never translates on hover
+ * (no lift, no tilt): the box stays put and the feedback reads instead as a
+ * gentle grow-in-place, a brightening border and a cursor-tracked glow.
+ * Spotlight tracking is disabled for reduced-motion and touch, and the pop
+ * itself is `motion-safe`, so hover state (the border/glow) still shows
+ * without any transform running.
  */
 export function SpotlightCard({
   children,
   className,
-  tilt = true,
 }: {
   children: ReactNode;
   className?: string;
-  tilt?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -89,61 +87,42 @@ export function SpotlightCard({
     let my = 50;
     let cmx = 50;
     let cmy = 50;
-    let rx = 0;
-    let ry = 0;
-    let crx = 0;
-    let cry = 0;
-    let liftTarget = 0;
-    let lift = 0;
 
     const onMove = (event: MouseEvent) => {
       const rect = el.getBoundingClientRect();
       mx = ((event.clientX - rect.left) / rect.width) * 100;
       my = ((event.clientY - rect.top) / rect.height) * 100;
-      if (tilt) {
-        ry = ((event.clientX - (rect.left + rect.width / 2)) / rect.width) * 9;
-        rx = -((event.clientY - (rect.top + rect.height / 2)) / rect.height) * 9;
-      }
-    };
-    const onEnter = () => {
-      liftTarget = tilt ? -6 : -3;
     };
     const onLeave = () => {
       mx = 50;
       my = 50;
-      rx = 0;
-      ry = 0;
-      liftTarget = 0;
     };
     const loop = () => {
       cmx += (mx - cmx) * 0.15;
       cmy += (my - cmy) * 0.15;
-      crx += (rx - crx) * 0.15;
-      cry += (ry - cry) * 0.15;
-      lift += (liftTarget - lift) * 0.15;
       el.style.setProperty('--mx', `${cmx.toFixed(2)}%`);
       el.style.setProperty('--my', `${cmy.toFixed(2)}%`);
-      el.style.transform = `perspective(900px) translateY(${lift.toFixed(2)}px) rotateX(${crx.toFixed(2)}deg) rotateY(${cry.toFixed(2)}deg)`;
       raf = requestAnimationFrame(loop);
     };
 
     el.addEventListener('mousemove', onMove);
-    el.addEventListener('mouseenter', onEnter);
     el.addEventListener('mouseleave', onLeave);
     raf = requestAnimationFrame(loop);
 
     return () => {
       el.removeEventListener('mousemove', onMove);
-      el.removeEventListener('mouseenter', onEnter);
       el.removeEventListener('mouseleave', onLeave);
       cancelAnimationFrame(raf);
     };
-  }, [tilt]);
+  }, []);
 
   return (
     <div
       ref={ref}
-      className={cn('group relative', className)}
+      className={cn(
+        'group relative transition-transform duration-ui ease-ctpl-out motion-safe:hover:scale-[1.022]',
+        className,
+      )}
       style={{ ['--mx' as string]: '50%', ['--my' as string]: '50%' } as React.CSSProperties}
     >
       <div
@@ -156,8 +135,8 @@ export function SpotlightCard({
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{ boxShadow: 'inset 0 0 0 1px rgba(61,107,255,0.25)' }}
+        className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{ boxShadow: 'inset 0 0 0 1.5px rgba(61,107,255,0.45)' }}
       />
       {/* Diagonal gloss sweep — clipped by the card's own overflow-hidden, so
           it only reads as a light passing across rather than a static shape. */}
