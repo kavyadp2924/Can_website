@@ -57,10 +57,13 @@ export function Reveal({
 }
 
 /**
- * Card with a cursor-following spotlight and optional perspective tilt. The
- * lighting tracks the pointer with damping; the tilt is restrained (max ~8°).
- * Disabled for reduced-motion and touch. `calm` drops the tilt for cards that
- * should read as quieter in the visual rhythm.
+ * Card with a cursor-following spotlight, optional perspective tilt, and a
+ * consistent hover lift. The lighting tracks the pointer with damping; the
+ * tilt is restrained (max ~9°), the lift is small (6px tilted, 3px flat) —
+ * enough to read as "this responds to you" without feeling like a toy.
+ * Disabled for reduced-motion and touch. `tilt=false` keeps the lift and
+ * spotlight but drops the rotation, for cards that should read as quieter in
+ * the visual rhythm.
  */
 export function SpotlightCard({
   children,
@@ -79,7 +82,7 @@ export function SpotlightCard({
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const noHover = window.matchMedia('(hover: none)').matches;
-    if (reduced || noHover || !tilt) return;
+    if (reduced || noHover) return;
 
     let raf = 0;
     let mx = 50;
@@ -90,41 +93,48 @@ export function SpotlightCard({
     let ry = 0;
     let crx = 0;
     let cry = 0;
+    let liftTarget = 0;
+    let lift = 0;
 
     const onMove = (event: MouseEvent) => {
       const rect = el.getBoundingClientRect();
       mx = ((event.clientX - rect.left) / rect.width) * 100;
       my = ((event.clientY - rect.top) / rect.height) * 100;
       if (tilt) {
-        ry = ((event.clientX - (rect.left + rect.width / 2)) / rect.width) * 8;
-        rx = -((event.clientY - (rect.top + rect.height / 2)) / rect.height) * 8;
+        ry = ((event.clientX - (rect.left + rect.width / 2)) / rect.width) * 9;
+        rx = -((event.clientY - (rect.top + rect.height / 2)) / rect.height) * 9;
       }
+    };
+    const onEnter = () => {
+      liftTarget = tilt ? -6 : -3;
     };
     const onLeave = () => {
       mx = 50;
       my = 50;
       rx = 0;
       ry = 0;
+      liftTarget = 0;
     };
     const loop = () => {
       cmx += (mx - cmx) * 0.15;
       cmy += (my - cmy) * 0.15;
       crx += (rx - crx) * 0.15;
       cry += (ry - cry) * 0.15;
+      lift += (liftTarget - lift) * 0.15;
       el.style.setProperty('--mx', `${cmx.toFixed(2)}%`);
       el.style.setProperty('--my', `${cmy.toFixed(2)}%`);
-      if (tilt) {
-        el.style.transform = `perspective(900px) rotateX(${crx.toFixed(2)}deg) rotateY(${cry.toFixed(2)}deg)`;
-      }
+      el.style.transform = `perspective(900px) translateY(${lift.toFixed(2)}px) rotateX(${crx.toFixed(2)}deg) rotateY(${cry.toFixed(2)}deg)`;
       raf = requestAnimationFrame(loop);
     };
 
     el.addEventListener('mousemove', onMove);
+    el.addEventListener('mouseenter', onEnter);
     el.addEventListener('mouseleave', onLeave);
     raf = requestAnimationFrame(loop);
 
     return () => {
       el.removeEventListener('mousemove', onMove);
+      el.removeEventListener('mouseenter', onEnter);
       el.removeEventListener('mouseleave', onLeave);
       cancelAnimationFrame(raf);
     };
@@ -149,8 +159,139 @@ export function SpotlightCard({
         className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
         style={{ boxShadow: 'inset 0 0 0 1px rgba(61,107,255,0.25)' }}
       />
+      {/* Diagonal gloss sweep — clipped by the card's own overflow-hidden, so
+          it only reads as a light passing across rather than a static shape. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
+        <div
+          className="absolute -inset-y-1/2 left-[-45%] w-1/4 -skew-x-12 bg-gradient-to-r from-transparent via-[rgba(61,107,255,0.10)] to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[380%]"
+        />
+      </div>
       {children}
     </div>
+  );
+}
+
+/**
+ * Pop-in entrance for cards: a small scale, a slight settle-rotation and a
+ * back-out overshoot, rather than a plain fade-up. Reads as an object
+ * arriving and settling into place — the kind of motion a card grid needs to
+ * avoid feeling like a wall of text with borders around it.
+ */
+export function CardReveal({
+  children,
+  className,
+  delay = 0,
+  index = 0,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** Milliseconds, matching every other reveal component's `delay` prop
+   *  (e.g. `FadeIn`) — converted to seconds internally since that is what
+   *  GSAP's own `delay` expects. */
+  delay?: number;
+  /** Alternates the settle-rotation direction so neighbouring cards do not
+   *  all tilt the same way on arrival. */
+  index?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduced = usePrefersReducedMotion();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reduced) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from(el, {
+        opacity: 0,
+        y: 46,
+        scale: 0.92,
+        rotate: index % 2 === 0 ? -1.4 : 1.4,
+        duration: 0.85,
+        delay: delay / 1000,
+        ease: 'back.out(1.6)',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, [reduced, delay, index]);
+
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Word-by-word kinetic heading — each word masks up from below on its own
+ * stagger rather than the whole line fading as one block. `accent` renders as
+ * a single trailing gradient chunk (matching `GradientText`) so a two-tone
+ * headline like "Find the failure / on screen, not on site" keeps one
+ * continuous gradient across the accent phrase instead of restarting it per
+ * word. Defined here (not `ui.tsx`) so both `ui.tsx` and `sections.tsx` can
+ * import it without a circular dependency.
+ */
+export function WordReveal({
+  text,
+  accent,
+  as = 'h2',
+  className,
+  shimmer = false,
+}: {
+  text: string;
+  /** Trailing phrase rendered in the brand gradient, as one animated unit. */
+  accent?: string;
+  as?: 'h1' | 'h2' | 'h3';
+  className?: string;
+  shimmer?: boolean;
+}) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const reduced = usePrefersReducedMotion();
+  const words = text.split(' ');
+  const Tag = as;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || reduced) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from(el.querySelectorAll('.w-inner'), {
+        yPercent: 115,
+        duration: 0.9,
+        ease: 'power3.out',
+        stagger: 0.07,
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+      });
+    }, el);
+
+    return () => ctx.revert();
+  }, [reduced, text, accent]);
+
+  return (
+    <Tag ref={ref} className={cn('font-display font-bold leading-[1.05] text-ink', className)}>
+      {words.map((word, i) => (
+        <span key={`w-${word}-${i}`} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+          <span className="w-inner inline-block">{word}</span>
+        </span>
+      )).reduce<React.ReactNode[]>((acc, node, i) => {
+        if (i > 0) acc.push(' ');
+        acc.push(node);
+        return acc;
+      }, [])}
+      {accent && (
+        <>
+          {' '}
+          <span className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+            <span
+              className={cn('w-inner inline-block bg-ctpl-gradient bg-clip-text text-transparent', shimmer && 'animate-shimmer')}
+            >
+              {accent}
+            </span>
+          </span>
+        </>
+      )}
+    </Tag>
   );
 }
 
