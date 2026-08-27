@@ -91,7 +91,6 @@ export default function HomePage() {
       <section className="relative scroll-mt-24 border-y border-hairline bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
-            className="mb-12"
             eyebrow="How the work moves"
             title="One model, start to finish"
             intro="Each stage inherits the last rather than reinterpreting it. That is the whole point — every handoff between vendors is a chance for the geometry, the tolerances or the intent to drift."
@@ -104,7 +103,6 @@ export default function HomePage() {
       <section className="relative scroll-mt-24">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
-            className="mb-12"
             eyebrow="What we do"
             title="Six disciplines, one accountable team"
             intro="Usually these live in six different companies, and the coordination between them becomes your job."
@@ -127,7 +125,6 @@ export default function HomePage() {
       <section className="relative scroll-mt-24">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading
-            className="mb-12"
             eyebrow="Who we work with"
             title="Different industries, the same underlying problem"
           />

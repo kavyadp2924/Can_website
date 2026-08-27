@@ -108,7 +108,7 @@ export default function VisualizationPage() {
       >
         <div className="space-y-6">
           {PROJECTS.map((project, index) => (
-            <CardReveal key={project.id} delay={index * 90} index={index}>
+            <CardReveal key={project.id} delay={index * 90}>
               <article
                 id={project.id}
                 className="group scroll-mt-36 overflow-hidden rounded-xl border border-hairline bg-white shadow-card transition-[box-shadow,border-color,background-color,transform] duration-ui ease-ctpl-out hover:border-card-hover-edge hover:bg-card-hover hover:shadow-raised motion-safe:hover:scale-[1.008]"
@@ -203,7 +203,7 @@ export default function VisualizationPage() {
             { name: 'Unreal Engine', items: UNREAL, accent: 'from-brand-red' },
             { name: 'Unity', items: UNITY, accent: 'from-brand-blue' },
           ].map((engine, index) => (
-            <CardReveal key={engine.name} delay={index * 90} index={index} className="h-full">
+            <CardReveal key={engine.name} delay={index * 90} className="h-full">
               <SpotlightCard className="h-full">
                 <article className="h-full overflow-hidden rounded-xl border border-hairline bg-white p-7 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
                   <span

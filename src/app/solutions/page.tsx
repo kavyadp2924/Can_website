@@ -141,7 +141,7 @@ export default function SolutionsPage() {
       <Section eyebrow="In detail" title="Capability pages">
         <div className="grid gap-5 sm:grid-cols-3">
           {DEEP_DIVES.map((item, index) => (
-            <CardReveal key={item.href} delay={index * 80} index={index} className="h-full">
+            <CardReveal key={item.href} delay={index * 80} className="h-full">
               <SpotlightCard className="h-full">
                 <Link
                   href={item.href}

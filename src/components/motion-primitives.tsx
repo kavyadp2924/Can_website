@@ -120,7 +120,11 @@ export function SpotlightCard({
     <div
       ref={ref}
       className={cn(
-        'group relative transition-transform duration-ui ease-ctpl-out motion-safe:hover:scale-[1.022]',
+        // `hover:z-10` matters: the hover scale grows the card a few pixels past
+        // its grid cell, and without a raised stacking order the next card in
+        // DOM order paints over that overflow, clipping one edge of the card
+        // being hovered.
+        'group relative transition-transform duration-ui ease-ctpl-out hover:z-10 motion-safe:hover:scale-[1.022]',
         className,
       )}
       style={{ ['--mx' as string]: '50%', ['--my' as string]: '50%' } as React.CSSProperties}
@@ -151,16 +155,15 @@ export function SpotlightCard({
 }
 
 /**
- * Pop-in entrance for cards: a small scale, a slight settle-rotation and a
- * back-out overshoot, rather than a plain fade-up. Reads as an object
- * arriving and settling into place — the kind of motion a card grid needs to
- * avoid feeling like a wall of text with borders around it.
+ * Staggered entrance for cards: opacity + translateY, with a small scale so a
+ * card reads as arriving rather than merely appearing. Deliberately restrained —
+ * no rotation and no back-out overshoot, both of which push a card outside its
+ * own grid cell mid-flight and can visually clip its neighbour.
  */
 export function CardReveal({
   children,
   className,
   delay = 0,
-  index = 0,
 }: {
   children: ReactNode;
   className?: string;
@@ -168,9 +171,6 @@ export function CardReveal({
    *  (e.g. `FadeIn`) — converted to seconds internally since that is what
    *  GSAP's own `delay` expects. */
   delay?: number;
-  /** Alternates the settle-rotation direction so neighbouring cards do not
-   *  all tilt the same way on arrival. */
-  index?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
@@ -182,18 +182,17 @@ export function CardReveal({
     const ctx = gsap.context(() => {
       gsap.from(el, {
         opacity: 0,
-        y: 46,
-        scale: 0.92,
-        rotate: index % 2 === 0 ? -1.4 : 1.4,
-        duration: 0.85,
+        y: 30,
+        scale: 0.97,
+        duration: 0.7,
         delay: delay / 1000,
-        ease: 'back.out(1.6)',
+        ease: 'power3.out',
         scrollTrigger: { trigger: el, start: 'top 88%', once: true },
       });
     }, el);
 
     return () => ctx.revert();
-  }, [reduced, delay, index]);
+  }, [reduced, delay]);
 
   return (
     <div ref={ref} className={className}>
@@ -352,8 +351,12 @@ export function ScrollLine({
 }
 
 /**
- * Clip + lift reveal for imagery. Wraps a media container; the frame masks in
- * from the bottom while the content settles, reading as "discovery".
+ * Clip reveal for imagery. Wraps a media container; the frame masks in from the
+ * bottom while the content settles, reading as "discovery".
+ *
+ * Deliberately no translate: the frame usually sits directly above its own
+ * caption, and starting it offset downward slides the image over that caption
+ * for the length of the tween. The clip carries the reveal on its own.
  */
 export function ImageReveal({
   children,
@@ -374,7 +377,7 @@ export function ImageReveal({
     const ctx = gsap.context(() => {
       gsap.from(el, {
         clipPath: 'inset(0 0 14% 0)',
-        y: 24,
+        opacity: 0,
         duration: 1,
         delay,
         ease: 'power3.out',

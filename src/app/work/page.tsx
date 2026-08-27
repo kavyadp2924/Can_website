@@ -77,7 +77,6 @@ export default function WorkPage() {
             <CardReveal
               key={project.title}
               delay={(index % 2) * 90}
-              index={index}
               className={index % 2 === 0 ? 'lg:col-span-7' : 'lg:col-span-5'}
             >
               <article className="group flex h-full flex-col transition-transform duration-ui ease-ctpl-out motion-safe:hover:scale-[1.015]">

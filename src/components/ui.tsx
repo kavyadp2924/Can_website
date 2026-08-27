@@ -212,7 +212,12 @@ export function PageHero({
 }
 
 /** The section heading block — a mask reveal for the title, calm fade for the
- *  supporting copy. One consistent entrance across the whole site. */
+ *  supporting copy. One consistent entrance across the whole site.
+ *
+ *  Carries its own bottom margin: it is always followed by section content, and
+ *  every caller having to remember `mb-12` meant that anything rendering the
+ *  heading through `Section` got no gap at all and sat flush against its cards.
+ *  `cn` runs through tailwind-merge, so a caller can still override it. */
 export function SectionHeading({
   eyebrow,
   title,
@@ -230,7 +235,7 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <div className={cn('max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
+    <div className={cn('mb-12 max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
       {index && (
         <Reveal>
           <span
@@ -322,7 +327,7 @@ export function FeatureGrid({
       {items.map((item, index) => (
         // Popped in with a stagger so a row assembles rather than snapping in
         // as one block.
-        <CardReveal key={item.title} delay={index * 70} index={index} className="h-full">
+        <CardReveal key={item.title} delay={index * 70} className="h-full">
           <SpotlightCard className={cn('h-full', variant === 'calm' && 'motion-safe:hover:scale-100')}>
             <article className="relative h-full overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
               {/* Persistent faint brand line + a brighter one that draws on hover */}
