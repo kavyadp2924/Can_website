@@ -18,10 +18,13 @@ export const metadata: Metadata = {
  *
  * The product's name is the section heading (rendered by `Section`, so it gets
  * the same word reveal as every other heading on the site) — this block starts
- * at the tagline and does not repeat it. The pipeline sits beside the copy on
- * desktop and beneath it on mobile, so a long summary never squeezes the stage
- * labels into a column too narrow to read. `children` takes the product's own
- * diagram where it has one.
+ * at the tagline and does not repeat it.
+ *
+ * The pipeline runs full width beneath the copy rather than as a column beside
+ * it. Set as a tall vertical card next to a three-line summary it left most of
+ * the section as dead space; across the full width it reads left-to-right, the
+ * way the process actually runs. `children` takes the product's own diagram
+ * where it has one.
  */
 function ProductBlock({
   product,
@@ -31,25 +34,24 @@ function ProductBlock({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_18rem] lg:gap-12">
-      <div>
-        <Reveal>
-          <p className="text-base font-medium text-ink-secondary">{product.tagline}</p>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
-            {product.summary}
-          </p>
-        </Reveal>
-        {children && <div className="mt-10">{children}</div>}
-      </div>
+    <div>
+      <Reveal>
+        <p className="text-base font-medium text-ink-secondary">{product.tagline}</p>
+      </Reveal>
+      <Reveal delay={0.1}>
+        <p className="mt-4 max-w-3xl text-sm leading-relaxed text-ink-muted sm:text-base">
+          {product.summary}
+        </p>
+      </Reveal>
 
-      <div className="h-fit rounded-xl border border-hairline bg-white p-6 shadow-card">
-        <p className="mb-4 text-eyebrow uppercase tracking-eyebrow text-ink-muted">
+      <div className="mt-9 rounded-xl border border-hairline bg-white p-6 shadow-card sm:p-7">
+        <p className="mb-6 text-eyebrow uppercase tracking-eyebrow text-ink-muted">
           {product.flowLabel ?? 'Pipeline'}
         </p>
         <StageFlow stages={product.pipeline} />
       </div>
+
+      {children && <div className="mt-10">{children}</div>}
     </div>
   );
 }
@@ -70,7 +72,7 @@ export default function AiPage() {
         variant="ai"
         primary={{ href: '/contact/', label: 'Talk to us' }}
         secondary={{ href: '#floorplan3d', label: 'See the products' }}
-        readout={['Graph · executing', 'layers 4 · signals live']}
+        readout={['Volume · resolving', 'cells 343 · scan live']}
       />
 
       <StickySectionNav

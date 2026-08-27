@@ -4,7 +4,6 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 import { FadeIn, Parallax } from './motion';
 import { usePrefersReducedMotion } from './motion';
-import { useMagnetic } from '@/lib/use-magnetic';
 import { CardReveal, Reveal, ScrollBackdrop, SpotlightCard, WordReveal } from './motion-primitives';
 
 /* ────────────────────────────────────────────────── typography ── */
@@ -100,6 +99,15 @@ export function BracketMotif({
 
 /* ─────────────────────────────────────────────────── buttons ── */
 
+/**
+ * Primary call to action.
+ *
+ * The button itself is deliberately static: it does not move toward the
+ * cursor, scale, or brighten on hover. Only the arrow travels. A filled
+ * gradient button that also shifts and lightens under the pointer reads as
+ * unstable, and the magnetic pull it used to have made the whole row of
+ * buttons twitch as the cursor crossed it.
+ */
 export function PrimaryLink({
   href,
   children,
@@ -109,13 +117,11 @@ export function PrimaryLink({
   children: ReactNode;
   className?: string;
 }) {
-  const ref = useMagnetic<HTMLAnchorElement>(0.3);
   return (
     <a
-      ref={ref}
       href={href}
       className={cn(
-        'group inline-flex h-12 items-center justify-center gap-2 rounded bg-ctpl-gradient px-7 text-sm font-semibold text-white shadow-cta transition-[filter,transform] duration-ui ease-ctpl-out hover:brightness-110',
+        'group inline-flex h-12 items-center justify-center gap-2 rounded bg-ctpl-fill px-7 text-sm font-semibold text-white shadow-cta',
         className,
       )}
     >
@@ -134,6 +140,7 @@ export function PrimaryLink({
   );
 }
 
+/** Secondary action. Static like `PrimaryLink`; only the arrow moves. */
 export function SecondaryLink({
   href,
   children,
@@ -143,13 +150,11 @@ export function SecondaryLink({
   children: ReactNode;
   className?: string;
 }) {
-  const ref = useMagnetic<HTMLAnchorElement>(0.25);
   return (
     <a
-      ref={ref}
       href={href}
       className={cn(
-        'group inline-flex h-12 items-center justify-center gap-2 rounded border border-border-strong bg-white/80 px-7 text-sm font-semibold text-ink backdrop-blur transition-colors duration-ui hover:bg-white',
+        'group inline-flex h-12 items-center justify-center gap-2 rounded border border-border-strong bg-white px-7 text-sm font-semibold text-ink',
         className,
       )}
     >
@@ -230,26 +235,36 @@ export function SectionHeading({
   title?: string;
   intro?: string;
   align?: 'left' | 'center';
-  /** Large, faint chapter number behind the eyebrow (decorative). */
+  /** Chapter number, set inline before the eyebrow. */
   index?: string;
   className?: string;
 }) {
   return (
     <div className={cn('mb-12 max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
-      {index && (
+      {/* The index sits on the eyebrow line rather than above it as an oversized
+          numeral. As a display-size number tinted `--ctpl-text` at 5% opacity it
+          was both an off-palette warm grey — near-invisible, and unrelated to any
+          brand colour — and a whole empty band of page above every heading. Set
+          in the brand blue at the eyebrow's own size, it reads as a chapter mark
+          and costs no vertical space. */}
+      {(eyebrow || index) && (
         <Reveal>
-          <span
-            aria-hidden="true"
-            className="block font-display text-6xl font-bold leading-none sm:text-7xl"
-            style={{ color: 'var(--ctpl-text)', opacity: 0.05 }}
+          <p
+            className={cn(
+              'flex items-center gap-2.5 text-eyebrow uppercase tracking-eyebrow text-link',
+              align === 'center' && 'justify-center',
+            )}
           >
-            {index}
-          </span>
-        </Reveal>
-      )}
-      {eyebrow && (
-        <Reveal>
-          <Eyebrow>{eyebrow}</Eyebrow>
+            {index && (
+              <>
+                <span aria-hidden="true" className="font-mono font-bold">
+                  {index}
+                </span>
+                <span aria-hidden="true" className="h-3 w-px bg-card-hover-edge" />
+              </>
+            )}
+            {eyebrow}
+          </p>
         </Reveal>
       )}
       {title && <WordReveal text={title} className="mt-3 text-3xl sm:text-4xl" />}

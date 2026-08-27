@@ -55,6 +55,16 @@ export function StatementSection({
 
 /* ───────────────────────────── process pipeline ── */
 
+/**
+ * The four-stage delivery strip.
+ *
+ * No stage is "active" on its own. The markers stay in one neutral resting
+ * state, and only the one the pointer is actually over changes — previously
+ * whichever stage happened to be near the middle of the viewport filled itself
+ * with the brand gradient and emitted a pinging halo, so the strip always had
+ * one loud marker that nobody had asked for and that moved as you scrolled.
+ * The scroll-scrubbed rail still carries the sense of progression.
+ */
 export function ProcessPipeline({
   stages,
 }: {
@@ -62,26 +72,7 @@ export function ProcessPipeline({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
   const reduced = usePrefersReducedMotion();
-
-  useEffect(() => {
-    const root = ref.current;
-    if (!root) return;
-    const items = root.querySelectorAll<HTMLElement>('[data-stage]');
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActive(Number((entry.target as HTMLElement).dataset.stage));
-          }
-        });
-      },
-      { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
-    );
-    items.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
 
   // The connecting rail draws left-to-right as the whole strip scrolls
   // through view, independent of which stage is "active" — a sense of the
@@ -117,42 +108,22 @@ export function ProcessPipeline({
         style={{ transform: reduced ? undefined : 'scaleX(0)' }}
       />
       <ol className="relative grid gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-        {stages.map((stage, i) => {
-          const isActive = active === i;
-          return (
-            <CardReveal key={stage.step} delay={i * 90} className="h-full">
-              <li data-stage={i} className="group relative flex h-full flex-col items-start">
-                <div className="mb-4 flex w-full items-center">
-                  <span
-                    className={cn(
-                      'relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white font-mono text-xs font-bold transition-all duration-ui ease-ctpl-out',
-                      isActive
-                        ? 'scale-110 border-transparent bg-ctpl-gradient text-white shadow-cta'
-                        : 'border-hairline text-ink-subtle group-hover:scale-105 group-hover:border-card-hover-edge group-hover:text-link',
-                    )}
-                  >
-                    {isActive && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute inset-0 -z-10 rounded-full bg-ctpl-gradient opacity-40 motion-safe:animate-ping"
-                      />
-                    )}
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                </div>
-                <h3
-                  className={cn(
-                    'font-display text-lg font-semibold transition-colors duration-ui',
-                    isActive ? 'text-ink' : 'text-ink-secondary group-hover:text-ink',
-                  )}
-                >
-                  {stage.step}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{stage.desc}</p>
-              </li>
-            </CardReveal>
-          );
-        })}
+        {stages.map((stage, i) => (
+          <CardReveal key={stage.step} delay={i * 90} className="h-full">
+            <li className="relative flex h-full flex-col items-start">
+              {/* The marker is a direct sibling of the heading, not wrapped, so
+                  `peer-hover` can reach the heading — hovering the number, and
+                  only the number, also brings the title to full strength. */}
+              <span className="peer mb-4 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-hairline bg-white font-mono text-xs font-bold text-ink-subtle transition-colors duration-ui ease-ctpl-out hover:border-card-hover-edge hover:bg-card-hover hover:text-link">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h3 className="font-display text-lg font-semibold text-ink-secondary transition-colors duration-ui peer-hover:text-ink">
+                {stage.step}
+              </h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{stage.desc}</p>
+            </li>
+          </CardReveal>
+        ))}
       </ol>
     </div>
   );
@@ -281,17 +252,22 @@ export function AudiencesShowcase({
 /* ───────────────────────────── stage flow (pipelines) ── */
 
 /**
- * A named pipeline, drawn as a vertical chain that fills as it is read.
+ * A named pipeline, drawn as a chain that fills as it is read.
  *
  * Used for the product workflows on the AI page — `2D FLOOR PLAN → SPACE
- * DETECTION → … → INTERACTIVE WALKTHROUGH` and the rest. Vertical rather than
- * horizontal at every breakpoint on purpose: the longest of these is eight
- * stages, and a horizontal chain that long either wraps (breaking the
- * connector) or shrinks the labels past reading size on a phone.
+ * DETECTION → … → INTERACTIVE WALKTHROUGH` and the rest.
  *
- * The rail is scrubbed to scroll; each stage lights as it passes the middle of
- * the viewport. Under reduced motion the rail is drawn complete and every stage
- * renders in its lit state, so the sequence still reads.
+ * Runs horizontally from `md` up and stacks vertically below it. Horizontal is
+ * the right default because the pipeline sits under its product copy across the
+ * full column: as a tall vertical card beside a three-line summary it left most
+ * of the section as empty space. Below `md` there is not enough width for eight
+ * labels to stay readable, so it falls back to the vertical chain.
+ *
+ * One `<ol>` serves both; the rail is two elements, each shown at its own
+ * breakpoint, because a single element cannot be scaled on X and Y responsively
+ * from one tween. The rail is scrubbed to scroll and each stage lights as it is
+ * reached. Under reduced motion the rail is drawn complete and every stage
+ * renders lit, so the sequence still reads as a sequence.
  */
 export function StageFlow({
   stages,
@@ -301,7 +277,8 @@ export function StageFlow({
   className?: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
-  const railRef = useRef<HTMLDivElement>(null);
+  const vRailRef = useRef<HTMLDivElement>(null);
+  const hRailRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(-1);
   const reduced = usePrefersReducedMotion();
 
@@ -313,11 +290,13 @@ export function StageFlow({
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActive((prev) => Math.max(prev, Number((entry.target as HTMLElement).dataset.flowStage)));
+            setActive((prev) =>
+              Math.max(prev, Number((entry.target as HTMLElement).dataset.flowStage)),
+            );
           }
         });
       },
-      { rootMargin: '-30% 0px -45% 0px', threshold: 0 },
+      { rootMargin: '-25% 0px -35% 0px', threshold: 0 },
     );
     items.forEach((item) => obs.observe(item));
     return () => obs.disconnect();
@@ -325,42 +304,54 @@ export function StageFlow({
 
   useEffect(() => {
     const el = root.current;
-    const rail = railRef.current;
-    if (!el || !rail || reduced) return;
+    if (!el || reduced) return;
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        rail,
-        { scaleY: 0 },
-        {
-          scaleY: 1,
-          ease: 'none',
-          scrollTrigger: { trigger: el, start: 'top 78%', end: 'bottom 55%', scrub: 0.4 },
-        },
-      );
+      const common = {
+        ease: 'none' as const,
+        scrollTrigger: { trigger: el, start: 'top 85%', end: 'bottom 60%', scrub: 0.4 },
+      };
+      if (vRailRef.current) gsap.fromTo(vRailRef.current, { scaleY: 0 }, { scaleY: 1, ...common });
+      if (hRailRef.current) gsap.fromTo(hRailRef.current, { scaleX: 0 }, { scaleX: 1, ...common });
     }, el);
     return () => ctx.revert();
   }, [reduced]);
 
   return (
     <div ref={root} className={cn('relative', className)}>
+      {/* vertical rail — below md */}
+      <div aria-hidden="true" className="absolute bottom-5 left-[0.6875rem] top-5 w-px bg-hairline md:hidden" />
       <div
+        ref={vRailRef}
         aria-hidden="true"
-        className="absolute bottom-5 left-[0.6875rem] top-5 w-px bg-hairline"
-      />
-      <div
-        ref={railRef}
-        aria-hidden="true"
-        className="absolute left-[0.6875rem] top-5 h-[calc(100%-2.5rem)] w-px origin-top bg-ctpl-gradient"
+        className="absolute left-[0.6875rem] top-5 h-[calc(100%-2.5rem)] w-px origin-top bg-ctpl-gradient md:hidden"
         style={{ transform: reduced ? undefined : 'scaleY(0)' }}
       />
-      <ol className="relative space-y-1">
+      {/* horizontal rail — md and up, level with the node centres */}
+      <div
+        aria-hidden="true"
+        className="absolute left-0 right-0 top-[0.6875rem] hidden h-px bg-hairline md:block"
+      />
+      <div
+        ref={hRailRef}
+        aria-hidden="true"
+        className="absolute left-0 right-0 top-[0.6875rem] hidden h-px origin-left bg-ctpl-gradient md:block"
+        style={{ transform: reduced ? undefined : 'scaleX(0)' }}
+      />
+
+      {/* Flex rather than a grid on md+ so the track count follows the number of
+          stages without a dynamic `grid-cols-N` class Tailwind cannot generate. */}
+      <ol className="relative grid gap-x-3 gap-y-1 md:flex md:gap-y-0">
         {stages.map((stage, i) => {
           const on = reduced || i <= active;
           return (
             <li
               key={stage}
               data-flow-stage={i}
-              className="grid grid-cols-[1.375rem_1fr] items-center gap-x-4 py-2.5"
+              className={cn(
+                // Vertical: marker beside the label. Horizontal: marker above it.
+                'grid grid-cols-[1.375rem_1fr] items-center gap-x-4 py-2.5',
+                'md:flex md:min-w-0 md:flex-1 md:flex-col md:items-start md:gap-y-3 md:py-0 md:pr-3',
+              )}
             >
               <span
                 aria-hidden="true"
@@ -372,13 +363,13 @@ export function StageFlow({
                 <span
                   className={cn(
                     'block rounded-full transition-all duration-ui ease-ctpl-out',
-                    on ? 'h-2 w-2 bg-ctpl-gradient' : 'h-1.5 w-1.5 bg-hairline',
+                    on ? 'h-2 w-2 bg-ctpl-fill' : 'h-1.5 w-1.5 bg-hairline',
                   )}
                 />
               </span>
               <span
                 className={cn(
-                  'font-mono text-[11px] font-semibold uppercase leading-snug tracking-eyebrow transition-colors duration-ui sm:text-xs',
+                  'font-mono text-[11px] font-semibold uppercase leading-snug tracking-eyebrow transition-colors duration-ui',
                   on ? 'text-ink' : 'text-ink-subtle',
                 )}
               >

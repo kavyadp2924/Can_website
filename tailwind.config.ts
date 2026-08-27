@@ -74,6 +74,7 @@ export default {
 
       backgroundImage: {
         'ctpl-gradient': 'var(--ctpl-gradient)',
+        'ctpl-fill': 'var(--ctpl-gradient-fill)',
         'ctpl-hero-wash': 'var(--ctpl-hero-wash)',
       },
 
