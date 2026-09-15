@@ -20,7 +20,7 @@ function Model({ url }: { url: string }) {
   return <primitive object={scene} />;
 }
 
-export default function ModelViewerScene({ url }: { url: string }) {
+export default function ModelViewerScene({ url, active = true }: { url: string; active?: boolean }) {
   const reduced = usePrefersReducedMotion();
 
   return (
@@ -28,7 +28,7 @@ export default function ModelViewerScene({ url }: { url: string }) {
       dpr={[1, 1.5]}
       camera={{ fov: 40 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
-      frameloop={reduced ? 'demand' : 'always'}
+      frameloop={!active ? 'never' : reduced ? 'demand' : 'always'}
     >
       <Suspense fallback={null}>
         <color attach="background" args={['#f4f5f7']} />

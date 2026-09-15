@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
-import { GradientText } from './ui';
 import { NAV_ITEMS, type NavItem } from '@/lib/nav';
 
 /**
@@ -109,8 +109,8 @@ export function SiteHeader() {
       className={cn(
         'sticky top-0 z-50 transition-[border-color,background-color,box-shadow,transform] duration-300',
         scrolled
-          ? 'border-b border-hairline bg-white/90 backdrop-blur-md shadow-card'
-          : 'border-b border-transparent bg-white/60 backdrop-blur-sm',
+          ? 'border-b border-hairline bg-white/95 shadow-card'
+          : 'border-b border-transparent bg-white/80',
       )}
     >
       <nav
@@ -118,12 +118,15 @@ export function SiteHeader() {
         aria-label="Main"
         className="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6"
       >
-        <Link
-          href="/"
-          className="shrink-0 font-display text-2xl font-bold tracking-wide text-ink"
-          aria-label="Canorous home"
-        >
-          CTP<GradientText>L</GradientText>
+        <Link href="/" className="shrink-0" aria-label="Canorous Technologies home">
+          <Image
+            src="/images/ctpl-logo.webp"
+            alt="CTPL — Unit of Canorous Technologies"
+            width={207}
+            height={96}
+            priority
+            className="h-12 w-auto"
+          />
         </Link>
 
         {/* ─────────────────────────────────────────── desktop ── */}

@@ -711,7 +711,7 @@ function useSceneInput(reduced: boolean) {
   return { pointer, scroll };
 }
 
-export default function PageScene({ variant }: { variant: SceneVariant }) {
+export default function PageScene({ variant, active = true }: { variant: SceneVariant; active?: boolean }) {
   const reduced = usePrefersReducedMotion();
   const { pointer, scroll } = useSceneInput(reduced);
 
@@ -725,6 +725,7 @@ export default function PageScene({ variant }: { variant: SceneVariant }) {
   return (
     <Canvas
       dpr={[1, 1.5]}
+      frameloop={active ? 'always' : 'never'}
       // The architecture massing declares castShadow/receiveShadow throughout;
       // without this prop none of it rendered and the model read as a flat,
       // untextured CAD screenshot. Self-shadowing under the roof overhang and

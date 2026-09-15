@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { GradientText } from './ui';
+import Image from 'next/image';
 
 /**
  * The footer carries the full sitemap, including the pages the header no longer
@@ -45,9 +45,13 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-10 sm:flex-row sm:justify-between">
           <div className="max-w-xs">
-            <p className="font-display text-xl font-bold tracking-wide text-ink">
-              CTP<GradientText>L</GradientText>
-            </p>
+            <Image
+              src="/images/ctpl-logo.webp"
+              alt="CTPL — Unit of Canorous Technologies"
+              width={207}
+              height={96}
+              className="h-14 w-auto"
+            />
             <p className="mt-3 text-sm leading-relaxed text-ink-muted">
               Engineering, simulation and real-time 3D under one roof. ISO 9001:2015 certified.
             </p>

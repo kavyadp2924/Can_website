@@ -449,16 +449,40 @@ function CameraRig({ progress }: CameraRigProps) {
 
 /* ────────────────────────────────────────────────── the scene ── */
 
+/**
+ * Nothing in the villa moves — only the camera does — so the sun's 2048² shadow
+ * map is identical every frame. Render it once the geometry is in place, then
+ * stop three.js from redrawing the whole scene into it 60 times a second.
+ */
+function FreezeShadowMap() {
+  const gl = useThree((state) => state.gl);
+  const frames = useRef(0);
+
+  useFrame(() => {
+    if (frames.current > 2) return;
+    frames.current += 1;
+    if (frames.current === 2) {
+      gl.shadowMap.autoUpdate = false;
+      gl.shadowMap.needsUpdate = true;
+    }
+  });
+
+  return null;
+}
+
 export default function VillaScene({
   progress,
+  active = true,
 }: {
   progress: React.MutableRefObject<number>;
+  active?: boolean;
 }) {
   return (
     <Canvas
       // Capped device pixel ratio — rendering at a phone's full 3x costs battery
       // for detail nobody can see.
       dpr={[1, 1.5]}
+      frameloop={active ? 'always' : 'never'}
       shadows
       camera={{ position: [16, 9, 16], fov: 38 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
@@ -506,6 +530,9 @@ export default function VillaScene({
           scale={30}
           blur={2.2}
           far={12}
+          // Static geometry: bake once instead of re-rendering depth + two blur
+          // passes every frame.
+          frames={1}
         />
 
         {/*
@@ -524,6 +551,7 @@ export default function VillaScene({
         </Environment>
 
         <CameraRig progress={progress} />
+        <FreezeShadowMap />
       </Suspense>
     </Canvas>
   );

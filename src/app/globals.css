@@ -260,16 +260,16 @@
 
 /* Route transition — a directional mask wipe rather than a plain fade, so
    navigating between pages reads as one continuous reveal instead of a blink. */
+/* Movement only — never opacity or clip-path. This runs on the very first page
+   load as well as on navigation, and starting the whole page at opacity 0 held
+   back the first visible paint (and the browser's Largest Contentful Paint) on
+   every single page by the length of the animation. */
 @keyframes pageReveal {
   from {
-    opacity: 0;
-    clip-path: inset(8% 0 0 0);
-    transform: translateY(14px) scale(0.994);
+    transform: translateY(10px);
   }
   to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -287,6 +287,70 @@
   }
 }
 
+/* Hero entrance. Pure CSS on purpose: it starts on the first painted frame from
+   the static HTML, instead of waiting for React to hydrate and GSAP to load
+   before hiding the already-visible text and fading it back in. That wait was
+   91% of the homepage's 5.1s Largest Contentful Paint on a mid-range phone.
+   Delays come from `--d` so each element sets its own place in the sequence;
+   everything here is short enough that the page reads as loaded, not loading. */
+.intro-rise {
+  animation: introRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms) both;
+}
+.intro-line {
+  animation: introLine 0.8s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms) both;
+}
+.intro-fade {
+  animation: introFade 0.9s ease-out var(--d, 0ms) both;
+}
+/* For the largest text on the page: movement only, never opacity. The browser
+   does not count an opacity-0 element as painted, so fading the hero paragraph
+   in held the Largest Contentful Paint back until the fade had finished. */
+.intro-settle {
+  animation: introSettle 0.7s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms) both;
+}
+@keyframes introSettle {
+  from {
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes introRise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes introLine {
+  from {
+    transform: translate3d(0, 110%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes introFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-rise,
+  .intro-line,
+  .intro-fade,
+  .intro-settle {
+    animation: none;
+  }
+}
+
 @keyframes pulseDot {
   0%,
   100% {
@@ -299,14 +363,18 @@
 
 /* ─────────────────────────── ambient atmosphere ── */
 
-/* Slow-drifting brand-colour orbs, blurred into the background. They read as a
-   living, premium wash rather than a hard graphic. Suppressed entirely under
-   reduced motion by the global media query below. */
+/* Slow-drifting brand-colour orbs. They read as a living, premium wash rather
+   than a hard graphic. Suppressed entirely under reduced motion by the global
+   media query below.
+
+   No `filter: blur()` here: a 70px blur on a 42rem layer is one of the most
+   expensive things a compositor can be asked to do, and these run on every
+   hero, page header and CTA band. The radial gradient already fades to fully
+   transparent, so the extra soft stop below gives the same edge for the cost
+   of a plain transform animation. */
 .ctpl-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(70px);
-  will-change: transform;
   pointer-events: none;
 }
 .ctpl-orb--red {
@@ -316,7 +384,8 @@
   left: -10rem;
   background: radial-gradient(
     circle at 35% 35%,
-    rgba(215, 30, 30, 0.28),
+    rgba(215, 30, 30, 0.24),
+    rgba(215, 30, 30, 0.1) 38%,
     rgba(215, 30, 30, 0) 70%
   );
   animation: orbFloat 19s ease-in-out infinite;
@@ -328,7 +397,8 @@
   right: -8rem;
   background: radial-gradient(
     circle at 65% 65%,
-    rgba(61, 107, 255, 0.28),
+    rgba(61, 107, 255, 0.24),
+    rgba(61, 107, 255, 0.1) 38%,
     rgba(61, 107, 255, 0) 70%
   );
   animation: orbFloat 24s ease-in-out infinite reverse;
@@ -344,10 +414,12 @@
 }
 
 /* Shimmering gradient text for signature headings — the brand gradient slowly
-   travels across the letters. */
+   travels across the letters. `background-position` cannot be composited, so
+   an infinite run repaints the headline every frame for as long as the page is
+   open; two passes keeps the effect on arrival and then lets the text settle. */
 .animate-shimmer {
   background-size: 220% 220%;
-  animation: gradientShimmer 7s ease-in-out infinite;
+  animation: gradientShimmer 7s ease-in-out 2;
 }
 @keyframes gradientShimmer {
   0% {

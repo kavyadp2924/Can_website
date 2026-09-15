@@ -470,7 +470,7 @@ export function StickySectionNav({ items }: { items: Array<{ id: string; label: 
 
   return (
     <div
-      className="sticky z-40 border-b border-hairline bg-white/95 backdrop-blur-md transition-[top] duration-300"
+      className="sticky z-40 border-b border-hairline bg-white/95 transition-[top] duration-300"
       style={{ top: headerHidden ? 0 : 'var(--header-h)' }}
     >
       <nav aria-label="On this page" className="mx-auto max-w-6xl px-4 py-2.5 sm:px-6">

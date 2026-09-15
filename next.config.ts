@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
 
+  experimental: {
+    // Inline the (~10 KB compressed) stylesheet into each HTML page. A static
+    // export has no server push, so otherwise the browser must fetch the CSS
+    // file before it can paint anything — Lighthouse measured that round trip
+    // at ~0.5s of render-blocking time on a mobile connection.
+    inlineCss: true,
+  },
+
   // Firebase Hosting serves /about/index.html for /about when this is on;
   // without it a refresh on a nested route can 404 depending on the rewrite
   // configuration.

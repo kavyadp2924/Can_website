@@ -27,6 +27,9 @@ export function GalleryCard({
             src={project.image}
             alt={project.title}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
+            // The first row is on screen at load (and is the page's largest
+            // paint on mobile), so it must not wait for lazy-loading.
+            priority={index < 2}
             className="absolute inset-0 transition-transform duration-[900ms] ease-ctpl-out group-hover:scale-[1.06]"
           />
           <span

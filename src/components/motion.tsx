@@ -82,11 +82,18 @@ export function FadeIn({
   const reduced = usePrefersReducedMotion();
   const { ref, inView } = useInView<HTMLDivElement>();
   const [ready, setReady] = useState(false);
+  const [startedVisible, setStartedVisible] = useState(false);
 
-  // Only start hiding things once we know JS is running and motion is wanted.
-  useEffect(() => setReady(true), []);
+  // Only start hiding things once we know JS is running and motion is wanted —
+  // and never hide what is already on screen: the static HTML has been showing
+  // it since first paint, so fading it out and back in reads as slow loading.
+  useEffect(() => {
+    const node = ref.current;
+    if (node && node.getBoundingClientRect().top < window.innerHeight) setStartedVisible(true);
+    setReady(true);
+  }, [ref]);
 
-  const hidden = ready && !reduced && !inView;
+  const hidden = ready && !reduced && !inView && !startedVisible;
 
   return (
     <div

@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { usePrefersReducedMotion } from './motion';
+import { useSceneGate } from '@/lib/use-scene-gate';
 
 /**
  * Three.js is loaded only in the browser and only once this section is near the
@@ -51,26 +52,15 @@ export function VillaWalkthrough() {
    */
   const progress = useRef(0);
 
-  const [mounted, setMounted] = useState(false);
   const [stage, setStage] = useState(0);
   const reduced = usePrefersReducedMotion();
+  // Two-core machines and data-saver get the static fallback; everyone else
+  // gets the scene once the page has loaded and the section is near.
+  const { mounted, active: sceneActive } = useSceneGate(sectionRef, { rootMargin: '300px' });
 
   useEffect(() => {
-    // Two-core machines get the static fallback: a scroll-driven WebGL scene is
-    // the last thing a laptop already struggling needs.
-    const lowPower =
-      typeof navigator !== 'undefined' &&
-      typeof navigator.hardwareConcurrency === 'number' &&
-      navigator.hardwareConcurrency <= 2;
-
     const node = sectionRef.current;
-    if (!node || lowPower) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setMounted(Boolean(entry?.isIntersecting)),
-      { rootMargin: '300px' },
-    );
-    observer.observe(node);
+    if (!node) return;
 
     let frame = 0;
     const onScroll = () => {
@@ -100,7 +90,6 @@ export function VillaWalkthrough() {
 
     return () => {
       window.removeEventListener('scroll', onScroll);
-      observer.disconnect();
       if (frame) cancelAnimationFrame(frame);
     };
   }, []);
@@ -119,7 +108,7 @@ export function VillaWalkthrough() {
     >
       <div className="sticky top-[calc(var(--header-h)+var(--subnav-h))] h-[calc(100svh-var(--header-h)-var(--subnav-h))] overflow-hidden bg-[#eef1f5]">
         {mounted ? (
-          <VillaScene progress={progress} />
+          <VillaScene progress={progress} active={sceneActive} />
         ) : (
           // Shown while the renderer loads, on low-power machines, and in the
           // exported HTML. Not a spinner — a spinner tells nobody anything.
@@ -135,7 +124,7 @@ export function VillaWalkthrough() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 p-6 sm:p-10">
           <div
             aria-live="polite"
-            className="max-w-md rounded-xl border border-white/40 bg-white/80 p-6 shadow-raised backdrop-blur-md"
+            className="max-w-md rounded-xl border border-white/40 bg-white/90 p-6 shadow-raised"
           >
             <p className="text-eyebrow uppercase tracking-eyebrow text-link">
               {active.label}
