@@ -117,7 +117,7 @@ export function VillaWalkthrough() {
       // has asked for no animation.
       className={reduced ? 'relative' : 'relative h-[320vh]'}
     >
-      <div className="sticky top-0 h-screen overflow-hidden bg-[#eef1f5]">
+      <div className="sticky top-[calc(var(--header-h)+var(--subnav-h))] h-[calc(100svh-var(--header-h)-var(--subnav-h))] overflow-hidden bg-[#eef1f5]">
         {mounted ? (
           <VillaScene progress={progress} />
         ) : (

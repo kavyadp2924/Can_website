@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { usePrefersReducedMotion } from './motion';
 import { cn } from '@/lib/cn';
@@ -52,60 +53,56 @@ export function CadTransform() {
   const [phase, setPhase] = useState(0);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = root.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      const q = gsap.utils.selector(el);
-      const tl = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 60%',
-          end: 'bottom 85%',
-          scrub: 0.5,
-        },
+    const q = gsap.utils.selector(el);
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 60%',
+        end: 'bottom 85%',
+        scrub: 0.5,
+      },
+    });
+
+    // Phase 1 → 2: the raster input dims as detection boxes resolve over it.
+    tl.to(q('[data-layer="raster"]'), { opacity: 0.28, duration: 1 })
+      .to(q('[data-layer="detect"]'), { opacity: 1, duration: 1 }, '<')
+      // Phase 2 → 3: boxes give way to the vertices they produced. Targets the
+      // individual vertex groups, not their container — the container has no
+      // opacity of its own to animate, so tweening it would be a no-op.
+      .to(q('[data-layer="detect"]'), { opacity: 0.2, duration: 1 })
+      .to(q('[data-layer="geom"] > g'), { opacity: 1, stagger: 0.02, duration: 0.6 }, '<')
+      // Phase 3 → 4: walls draw themselves along the resolved edges.
+      .to(q('[data-layer="struct"]'), { opacity: 1, duration: 0.4 })
+      .to(q('[data-layer="struct"] path'), { strokeDashoffset: 0, duration: 1.4 }, '<')
+      // Phase 4 → 5: the finished, dimensioned CAD sheet.
+      .to(q('[data-layer="raster"]'), { opacity: 0, duration: 0.8 })
+      .to(q('[data-layer="detect"]'), { opacity: 0, duration: 0.8 }, '<')
+      .to(q('[data-layer="cad"]'), { opacity: 1, duration: 1 }, '<');
+
+    // The phase caption is discrete, so it is driven by its own triggers
+    // rather than by reading progress off the scrubbed timeline every frame.
+    q('[data-phase]').forEach((item, i) => {
+      ScrollTrigger.create({
+        trigger: item,
+        start: 'top 65%',
+        end: 'bottom 40%',
+        onEnter: () => setPhase(i),
+        onEnterBack: () => setPhase(i),
       });
-
-      // Phase 1 → 2: the raster input dims as detection boxes resolve over it.
-      tl.to(q('[data-layer="raster"]'), { opacity: 0.28, duration: 1 })
-        .to(q('[data-layer="detect"]'), { opacity: 1, duration: 1 }, '<')
-        // Phase 2 → 3: boxes give way to the vertices they produced. Targets the
-        // individual vertex groups, not their container — the container has no
-        // opacity of its own to animate, so tweening it would be a no-op.
-        .to(q('[data-layer="detect"]'), { opacity: 0.2, duration: 1 })
-        .to(q('[data-layer="geom"] > g'), { opacity: 1, stagger: 0.02, duration: 0.6 }, '<')
-        // Phase 3 → 4: walls draw themselves along the resolved edges.
-        .to(q('[data-layer="struct"]'), { opacity: 1, duration: 0.4 })
-        .to(q('[data-layer="struct"] path'), { strokeDashoffset: 0, duration: 1.4 }, '<')
-        // Phase 4 → 5: the finished, dimensioned CAD sheet.
-        .to(q('[data-layer="raster"]'), { opacity: 0, duration: 0.8 })
-        .to(q('[data-layer="detect"]'), { opacity: 0, duration: 0.8 }, '<')
-        .to(q('[data-layer="cad"]'), { opacity: 1, duration: 1 }, '<');
-
-      // The phase caption is discrete, so it is driven by its own triggers
-      // rather than by reading progress off the scrubbed timeline every frame.
-      q('[data-phase]').forEach((item, i) => {
-        ScrollTrigger.create({
-          trigger: item,
-          start: 'top 65%',
-          end: 'bottom 40%',
-          onEnter: () => setPhase(i),
-          onEnterBack: () => setPhase(i),
-        });
-      });
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced]);
+    });
+  }, { scope: root, dependencies: [reduced] });
 
   const done = reduced;
 
   return (
     <div ref={root} className="grid gap-10 lg:grid-cols-[1fr_22rem] lg:gap-14">
       {/* ─────────────────────────────────────── sticky viewport ── */}
-      <div className="lg:sticky lg:top-32 lg:h-fit">
+      <div className="lg:sticky lg:top-[calc(var(--header-h)+var(--subnav-h)+1rem)] lg:h-fit">
         <div className="relative overflow-hidden rounded-xl border border-hairline bg-white shadow-card">
           <div className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
             <span className="font-mono text-[11px] uppercase tracking-eyebrow text-ink-muted">

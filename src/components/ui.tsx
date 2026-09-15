@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 import { FadeIn, Parallax } from './motion';
 import { usePrefersReducedMotion } from './motion';
@@ -196,7 +196,7 @@ export function PageHero({
       <BracketMotif side="left" float />
       <BracketMotif side="right" float />
 
-      <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
+      <div className="relative mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
         <Eyebrow>{eyebrow}</Eyebrow>
         <WordReveal
           as="h1"
@@ -240,7 +240,7 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <div className={cn('mb-12 max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
+    <div className={cn('mb-8 max-w-2xl', align === 'center' && 'mx-auto text-center', className)}>
       {/* The index sits on the eyebrow line rather than above it as an oversized
           numeral. As a display-size number tinted `--ctpl-text` at 5% opacity it
           was both an off-palette warm grey — near-invisible, and unrelated to any
@@ -303,16 +303,16 @@ export function Section({
   return (
     <section
       id={id}
-      // scroll-mt clears the sticky header, so an #anchor does not land with the
-      // heading hidden underneath it.
+      // scroll-mt clears the persistent header + in-page nav so an #anchor
+      // does not land with the heading hidden underneath them.
       className={cn(
-        'relative scroll-mt-36',
+        'relative scroll-mt-[calc(var(--header-h)+var(--subnav-h)+0.75rem)]',
         tone === 'surface' && 'border-y border-hairline bg-surface',
         className,
       )}
     >
       {wash && <ScrollBackdrop />}
-      <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+      <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8">
         {(eyebrow || title || intro) && (
           <SectionHeading eyebrow={eyebrow} title={title} intro={intro} index={index} />
         )}
@@ -399,58 +399,128 @@ export function FeatureList({ items }: { items: Array<{ title: string; desc: str
 }
 
 /**
- * Sticky in-page section navigation for long, technical pages. Hidden on small
- * screens (where the page simply scrolls). Highlights the active section via an
- * IntersectionObserver and routes anchor clicks through Lenis.
+ * Sticky in-page section navigation for long, technical pages.
+ *
+ * A full-width segmented control (not a left-clustered pill list) with a
+ * sliding surface behind the active item. IntersectionObserver tracks the
+ * section in view; Lenis already handles the hash-link glide.
  */
 export function StickySectionNav({ items }: { items: Array<{ id: string; label: string }> }) {
   const [active, setActive] = useState(items[0]?.id);
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const listRef = useRef<HTMLUListElement>(null);
   const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
+    const update = () => {
+      setHeaderHidden(document.body.getAttribute('data-header-hidden') === 'true');
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-header-hidden'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const updateIndicator = useCallback(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const el = list.querySelector<HTMLElement>(`:scope > [data-section="${active}"]`);
+    if (!el) return;
+    setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [active]);
+
+  useEffect(() => {
+    updateIndicator();
+    const list = listRef.current;
+    if (!list) return;
+    const ro = new ResizeObserver(updateIndicator);
+    ro.observe(list);
+    window.addEventListener('resize', updateIndicator);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateIndicator);
+    };
+  }, [updateIndicator]);
+
+  useEffect(() => {
+    const el = listRef.current?.querySelector<HTMLElement>(`:scope > [data-section="${active}"]`);
+    el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+  }, [active, reduced]);
+
+  useEffect(() => {
+    const nodes = items
+      .map((item) => document.getElementById(item.id))
+      .filter((node): node is HTMLElement => Boolean(node));
+    if (!nodes.length) return;
+
     const obs = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActive(entry.target.id);
-        });
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible?.target.id) setActive(visible.target.id);
       },
-      { rootMargin: '-45% 0px -50% 0px' },
+      { rootMargin: '-40% 0px -50% 0px', threshold: [0, 0.2, 0.5] },
     );
-    items.forEach((it) => {
-      const el = document.getElementById(it.id);
-      if (el) obs.observe(el);
-    });
+
+    nodes.forEach((node) => obs.observe(node));
     return () => obs.disconnect();
   }, [items]);
 
   return (
-    <div className="sticky top-[4.5rem] z-30 hidden border-b border-hairline bg-white/95 backdrop-blur-md lg:block">
-      <nav aria-label="On this page" className="mx-auto max-w-6xl px-4 sm:px-6">
-        <ul className="flex gap-1 overflow-x-auto py-2.5">
-          {items.map((it) => (
-            <li key={it.id}>
-              <a
-                href={`#${it.id}`}
-                aria-current={active === it.id ? 'true' : undefined}
-                className={cn(
-                  'relative inline-flex items-center whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors duration-ui',
-                  active === it.id
-                    ? 'bg-surface text-ink'
-                    : 'text-ink-muted hover:text-ink',
-                )}
-              >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    'mr-2 inline-block h-1.5 w-1.5 rounded-full transition-colors duration-ui',
-                    active === it.id ? 'bg-ctpl-gradient' : 'bg-hairline',
-                  )}
-                />
-                {it.label}
-              </a>
-            </li>
-          ))}
-        </ul>
+    <div
+      className="sticky z-40 border-b border-hairline bg-white/95 backdrop-blur-md transition-[top] duration-300"
+      style={{ top: headerHidden ? 0 : 'var(--header-h)' }}
+    >
+      <nav aria-label="On this page" className="mx-auto max-w-6xl px-4 py-2.5 sm:px-6">
+        <div className="snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <ul
+            ref={listRef}
+            className="relative flex min-w-full rounded-full border border-hairline bg-surface p-1"
+          >
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1 h-[calc(100%-0.5rem)] rounded-full bg-white shadow-card"
+              style={{
+                left: indicator.left,
+                width: indicator.width,
+                opacity: indicator.width ? 1 : 0,
+                transition: reduced
+                  ? undefined
+                  : 'left 280ms cubic-bezier(0.16, 1, 0.3, 1), width 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms ease',
+              }}
+            />
+            {items.map((it) => {
+              const isActive = active === it.id;
+              return (
+                <li
+                  key={it.id}
+                  data-section={it.id}
+                  className="relative z-10 min-w-[9.5rem] shrink-0 snap-start lg:min-w-0 lg:flex-1"
+                >
+                  <a
+                    href={`#${it.id}`}
+                    aria-current={isActive ? 'location' : undefined}
+                    className={cn(
+                      'flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors duration-ui',
+                      isActive ? 'text-ink' : 'text-ink-muted hover:text-ink',
+                    )}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'h-1.5 w-1.5 shrink-0 rounded-full transition-[background,transform] duration-ui ease-ctpl-out',
+                        isActive ? 'scale-125 bg-ctpl-gradient' : 'bg-hairline',
+                      )}
+                    />
+                    <span className="whitespace-nowrap">{it.label}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </nav>
     </div>
   );
@@ -460,20 +530,22 @@ export function CtaBand({
   title = 'Have something to build?',
   body = 'Send us the drawings, the model, or just the problem. We will come back with an approach and a realistic timeline.',
   action = 'Start a conversation',
+  href = '/contact/',
 }: {
   title?: string;
   body?: string;
   action?: string;
+  href?: string;
 }) {
   return (
     <section className="relative overflow-hidden border-t border-hairline bg-surface ctpl-wash">
       <AmbientField className="opacity-70" />
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-16 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <Reveal>
           <h2 className="font-display text-2xl font-bold text-ink">{title}</h2>
           <p className="mt-2 max-w-xl text-sm text-ink-muted">{body}</p>
         </Reveal>
-        <PrimaryLink href="/contact/" className="shrink-0">
+        <PrimaryLink href={href} className="shrink-0">
           {action}
         </PrimaryLink>
       </div>

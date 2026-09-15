@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useGSAP } from '@gsap/react';
 import { gsap } from '@/lib/gsap';
 import { usePrefersReducedMotion } from './motion';
 
@@ -40,43 +41,39 @@ export function AgentHub() {
   const root = useRef<SVGSVGElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = root.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: el, start: 'top 80%', once: true },
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: el, start: 'top 80%', once: true },
+    });
+    tl.from('[data-hub-link]', {
+      strokeDashoffset: 1,
+      duration: 0.9,
+      stagger: 0.09,
+      ease: 'power2.out',
+    })
+      .from(
+        '[data-hub-node]',
+        { opacity: 0, scale: 0.8, transformOrigin: 'center', duration: 0.5, stagger: 0.07 },
+        '-=0.6',
+      )
+      .to('[data-hub-pulse]', {
+        opacity: 1,
+        duration: 0.3,
       });
-      tl.from('[data-hub-link]', {
-        strokeDashoffset: 1,
-        duration: 0.9,
-        stagger: 0.09,
-        ease: 'power2.out',
-      })
-        .from(
-          '[data-hub-node]',
-          { opacity: 0, scale: 0.8, transformOrigin: 'center', duration: 0.5, stagger: 0.07 },
-          '-=0.6',
-        )
-        .to('[data-hub-pulse]', {
-          opacity: 1,
-          duration: 0.3,
-        });
 
-      // A signal runs each link on its own phase once the topology has settled.
-      gsap.to('[data-hub-pulse]', {
-        keyframes: [{ scale: 1.6, opacity: 0.15 }, { scale: 1, opacity: 0.55 }],
-        transformOrigin: 'center',
-        duration: 2.6,
-        repeat: -1,
-        stagger: 0.35,
-        ease: 'sine.inOut',
-      });
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced]);
+    // A signal runs each link on its own phase once the topology has settled.
+    gsap.to('[data-hub-pulse]', {
+      keyframes: [{ scale: 1.6, opacity: 0.15 }, { scale: 1, opacity: 0.55 }],
+      transformOrigin: 'center',
+      duration: 2.6,
+      repeat: -1,
+      stagger: 0.35,
+      ease: 'sine.inOut',
+    });
+  }, { scope: root, dependencies: [reduced] });
 
   return (
     <svg

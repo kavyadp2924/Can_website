@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { GradientText } from './ui';
-import { NAV_ITEMS, PORTAL_URL, type NavItem } from '@/lib/nav';
+import { NAV_ITEMS, type NavItem } from '@/lib/nav';
 
 /**
  * Site header with dropdown navigation.
@@ -27,9 +27,9 @@ export function SiteHeader() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   // Close menus on navigation — otherwise the dropdown stays open over the new page.
   useEffect(() => {
@@ -55,19 +55,28 @@ export function SiteHeader() {
     };
   }, []);
 
-  // The header gains a border and stronger blur once the page scrolls, so it
-  // stays legible over the hero's 3D scene. It also hides on scroll-down and
-  // reveals on scroll-up — a premium, unobtrusive pattern for long pages.
+  // Border + blur on scroll, and hide/show via direct DOM classList for instant response.
   useEffect(() => {
-    let last = window.scrollY;
+    let lastY = window.scrollY;
+    const header = headerRef.current;
+    if (!header) return;
+
     const onScroll = () => {
       const y = window.scrollY;
+      const delta = y - lastY;
+      lastY = y;
+
       setScrolled(y > 8);
-      if (y > last && y > 140) setHidden(true);
-      else setHidden(false);
-      last = y;
+
+      if (delta > 10 && y > 80) {
+        header.classList.add('-translate-y-full');
+        document.body.setAttribute('data-header-hidden', 'true');
+      } else if (delta < -10) {
+        header.classList.remove('-translate-y-full');
+        document.body.setAttribute('data-header-hidden', 'false');
+      }
     };
-    onScroll();
+
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -96,9 +105,9 @@ export function SiteHeader() {
 
   return (
     <header
+      ref={headerRef}
       className={cn(
-        'sticky top-0 z-50 transition-[transform,border-color,background-color,box-shadow] duration-300',
-        hidden ? '-translate-y-[120%]' : 'translate-y-0',
+        'sticky top-0 z-50 transition-[border-color,background-color,box-shadow,transform] duration-300',
         scrolled
           ? 'border-b border-hairline bg-white/90 backdrop-blur-md shadow-card'
           : 'border-b border-transparent bg-white/60 backdrop-blur-sm',
@@ -107,7 +116,7 @@ export function SiteHeader() {
       <nav
         ref={navRef}
         aria-label="Main"
-        className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3.5 sm:px-6"
+        className="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6"
       >
         <Link
           href="/"
@@ -229,12 +238,6 @@ export function SiteHeader() {
         </ul>
 
         <div className="flex items-center gap-2">
-          <a
-            href={PORTAL_URL}
-            className="hidden rounded border border-border-strong px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-surface sm:inline-flex"
-          >
-            Employee login
-          </a>
           <Link
             href="/contact"
             className="hidden h-10 items-center rounded bg-ctpl-gradient px-5 text-sm font-semibold text-white shadow-cta transition-[filter] hover:brightness-110 lg:inline-flex"
@@ -327,12 +330,6 @@ export function SiteHeader() {
             >
               Talk to us
             </Link>
-            <a
-              href={PORTAL_URL}
-              className="flex h-12 items-center justify-center rounded border border-border-strong text-sm font-semibold text-ink"
-            >
-              Employee login
-            </a>
           </div>
         </div>
       )}

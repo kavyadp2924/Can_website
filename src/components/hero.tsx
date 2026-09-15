@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
 import { AmbientField, BracketMotif, Eyebrow, GradientText, PrimaryLink, SecondaryLink } from './ui';
 import { usePointerDepth } from '@/lib/use-pointer-depth';
 import { gsap } from '@/lib/gsap';
@@ -45,27 +46,24 @@ export function Hero() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
+  useGSAP(() => {
     if (reduced) return;
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      tl.from('[data-hero="grid"]', { opacity: 0, duration: 1.1 })
-        .from('[data-hero="eyebrow"]', { opacity: 0, y: 14, duration: 0.6 }, 0.15)
-        .from('[data-hero="bracket-l"]', { opacity: 0, duration: 0.9 }, 0.15)
-        .from('[data-hero="bracket-r"]', { opacity: 0, duration: 0.9 }, 0.15)
-        .from(canvasWrapRef.current, { opacity: 0, scale: 0.94, duration: 1.3 }, 0.3)
-        .from(
-          '[data-hero="line"]',
-          { yPercent: 120, opacity: 0, duration: 1, stagger: 0.12, ease: 'power4.out' },
-          0.45,
-        )
-        .from('[data-hero="sub"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
-        .from('[data-hero="cta"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
-        .from('[data-hero="meta"]', { opacity: 0, y: 14, duration: 0.6 }, '-=0.5')
-        .from('[data-hero="tech"]', { opacity: 0, x: 12, duration: 0.7 }, '-=0.45');
-    }, sectionRef);
-    return () => ctx.revert();
-  }, [reduced]);
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('[data-hero="grid"]', { opacity: 0, duration: 1.1 })
+      .from('[data-hero="eyebrow"]', { opacity: 0, y: 14, duration: 0.6 }, 0.15)
+      .from('[data-hero="bracket-l"]', { opacity: 0, duration: 0.9 }, 0.15)
+      .from('[data-hero="bracket-r"]', { opacity: 0, duration: 0.9 }, 0.15)
+      .from(canvasWrapRef.current, { opacity: 0, scale: 0.94, duration: 1.3 }, 0.3)
+      .from(
+        '[data-hero="line"]',
+        { yPercent: 120, opacity: 0, duration: 1, stagger: 0.12, ease: 'power4.out' },
+        0.45,
+      )
+      .from('[data-hero="sub"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
+      .from('[data-hero="cta"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
+      .from('[data-hero="meta"]', { opacity: 0, y: 14, duration: 0.6 }, '-=0.5')
+      .from('[data-hero="tech"]', { opacity: 0, x: 12, duration: 0.7 }, '-=0.45');
+  }, { scope: sectionRef, dependencies: [reduced] });
 
   return (
     <section
@@ -125,7 +123,7 @@ export function Hero() {
 
       <div
         ref={depthRef}
-        className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 py-24 sm:px-6 sm:py-32 lg:grid-cols-2"
+        className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2"
       >
         <div>
           <div data-hero="eyebrow">

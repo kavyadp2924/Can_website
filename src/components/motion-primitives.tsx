@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useGSAP } from '@gsap/react';
 import Image from 'next/image';
 import { gsap } from '@/lib/gsap';
 import { usePrefersReducedMotion } from './motion';
@@ -29,25 +30,21 @@ export function Reveal({
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      const vars: gsap.TweenVars = {
-        opacity: 0,
-        y,
-        duration: 0.9,
-        delay,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-      };
-      if (clip) vars.clipPath = 'inset(0 0 100% 0)';
-      gsap.from(el, vars);
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced, delay, y, clip]);
+    const vars: gsap.TweenVars = {
+      opacity: 0,
+      y,
+      duration: 0.9,
+      delay,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+    };
+    if (clip) vars.clipPath = 'inset(0 0 100% 0)';
+    gsap.from(el, vars);
+  }, { scope: ref, dependencies: [reduced, delay, y, clip] });
 
   return (
     <div ref={ref} className={className}>
@@ -175,24 +172,20 @@ export function CardReveal({
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(el, {
-        opacity: 0,
-        y: 30,
-        scale: 0.97,
-        duration: 0.7,
-        delay: delay / 1000,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-      });
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced, delay]);
+    gsap.from(el, {
+      opacity: 0,
+      y: 30,
+      scale: 0.97,
+      duration: 0.7,
+      delay: delay / 1000,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+    });
+  }, { scope: ref, dependencies: [reduced, delay] });
 
   return (
     <div ref={ref} className={className}>
@@ -229,22 +222,18 @@ export function WordReveal({
   const words = text.split(' ');
   const Tag = as;
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(el.querySelectorAll('.w-inner'), {
-        yPercent: 115,
-        duration: 0.9,
-        ease: 'power3.out',
-        stagger: 0.07,
-        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-      });
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced, text, accent]);
+    gsap.from(el.querySelectorAll('.w-inner'), {
+      yPercent: 115,
+      duration: 0.9,
+      ease: 'power3.out',
+      stagger: 0.07,
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+    });
+  }, { scope: ref, dependencies: [reduced, text, accent] });
 
   return (
     <Tag ref={ref} className={cn('font-display font-bold leading-[1.05] text-ink', className)}>
@@ -281,25 +270,21 @@ export function LineReveal({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        el,
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          duration: 1.1,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: el, start: 'top 90%', once: true },
-        },
-      );
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced]);
+    gsap.fromTo(
+      el,
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        duration: 1.1,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+      },
+    );
+  }, { scope: ref, dependencies: [reduced] });
 
   return <div ref={ref} className={cn('h-px bg-ctpl-gradient origin-left', className)} />;
 }
@@ -323,20 +308,17 @@ export function ScrollLine({
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     if (!el || reduced) return;
-    const ctx = gsap.context(() => {
-      const from = orientation === 'horizontal' ? { scaleX: 0 } : { scaleY: 0 };
-      const to = orientation === 'horizontal' ? { scaleX: 1 } : { scaleY: 1 };
-      gsap.fromTo(el, from, {
-        ...to,
-        ease: 'none',
-        scrollTrigger: { trigger: el.parentElement ?? el, start, end, scrub: true },
-      });
-    }, el);
-    return () => ctx.revert();
-  }, [reduced, orientation, start, end]);
+    const from = orientation === 'horizontal' ? { scaleX: 0 } : { scaleY: 0 };
+    const to = orientation === 'horizontal' ? { scaleX: 1 } : { scaleY: 1 };
+    gsap.fromTo(el, from, {
+      ...to,
+      ease: 'none',
+      scrollTrigger: { trigger: el.parentElement ?? el, start, end, scrub: true },
+    });
+  }, { scope: ref, dependencies: [reduced, orientation, start, end] });
 
   return (
     <div
@@ -370,23 +352,19 @@ export function ImageReveal({
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      gsap.from(el, {
-        clipPath: 'inset(0 0 14% 0)',
-        opacity: 0,
-        duration: 1,
-        delay,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-      });
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced, delay]);
+    gsap.from(el, {
+      clipPath: 'inset(0 0 14% 0)',
+      opacity: 0,
+      duration: 1,
+      delay,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+    });
+  }, { scope: ref, dependencies: [reduced, delay] });
 
   return (
     <div ref={ref} className={className}>
@@ -417,25 +395,21 @@ export function MediaFrame({
   const imgRef = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     const img = imgRef.current;
     if (!el || !img || reduced) return;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        img,
-        { yPercent: -8 },
-        {
-          yPercent: 8,
-          ease: 'none',
-          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true },
-        },
-      );
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced]);
+    gsap.fromTo(
+      img,
+      { yPercent: -8 },
+      {
+        yPercent: 8,
+        ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true },
+      },
+    );
+  }, { scope: ref, dependencies: [reduced] });
 
   return (
     <div ref={ref} className={cn('relative overflow-hidden', className)}>
@@ -455,25 +429,21 @@ export function ScrollBackdrop({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
     if (!el || reduced) return;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        el,
-        { yPercent: -10, opacity: 0.35 },
-        {
-          yPercent: 10,
-          opacity: 0.85,
-          ease: 'none',
-          scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
-        },
-      );
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced]);
+    gsap.fromTo(
+      el,
+      { yPercent: -10, opacity: 0.35 },
+      {
+        yPercent: 10,
+        opacity: 0.85,
+        ease: 'none',
+        scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+      },
+    );
+  }, { scope: ref, dependencies: [reduced] });
 
   return (
     <div

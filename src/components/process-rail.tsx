@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { usePrefersReducedMotion } from './motion';
 import { cn } from '@/lib/cn';
@@ -27,43 +28,39 @@ export function ProcessRail({
   const reduced = usePrefersReducedMotion();
   const [active, setActive] = useState(0);
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = root.current;
     if (!el || reduced) return;
 
     const line = el.querySelector<HTMLElement>('[data-rail-line]');
-    const ctx = gsap.context(() => {
-      if (line) {
-        gsap.fromTo(
-          line,
-          { scaleY: 0 },
-          {
-            scaleY: 1,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: el,
-              start: 'top 70%',
-              end: 'bottom 40%',
-              scrub: 0.4,
-            },
+    if (line) {
+      gsap.fromTo(
+        line,
+        { scaleY: 0 },
+        {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 70%',
+            end: 'bottom 40%',
+            scrub: 0.4,
           },
-        );
-      }
+        },
+      );
+    }
 
-      const items = el.querySelectorAll<HTMLElement>('[data-rail-stage]');
-      items.forEach((item, i) => {
-        ScrollTrigger.create({
-          trigger: item,
-          start: 'top 62%',
-          end: 'bottom 38%',
-          onEnter: () => setActive(i),
-          onEnterBack: () => setActive(i),
-        });
+    const items = el.querySelectorAll<HTMLElement>('[data-rail-stage]');
+    items.forEach((item, i) => {
+      ScrollTrigger.create({
+        trigger: item,
+        start: 'top 62%',
+        end: 'bottom 38%',
+        onEnter: () => setActive(i),
+        onEnterBack: () => setActive(i),
       });
-    }, el);
-
-    return () => ctx.revert();
-  }, [reduced]);
+    });
+  }, { scope: root, dependencies: [reduced] });
 
   return (
     <div ref={root} className={cn('relative', className)}>

@@ -25,6 +25,8 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       touchMultiplier: 1.4,
+      // Native window scrolling so sticky header / section nav stay pinned.
+      wrapper: window,
     });
 
     lenis.on('scroll', ScrollTrigger.update);
@@ -42,7 +44,10 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
         const target = document.querySelector(href);
         if (target) {
           event.preventDefault();
-          lenis.scrollTo(target as HTMLElement, { offset: -80 });
+          const headerH = document.querySelector('header')?.getBoundingClientRect().height ?? 72;
+          const subnav = document.querySelector('[aria-label="On this page"]');
+          const subH = subnav ? subnav.getBoundingClientRect().height : 0;
+          lenis.scrollTo(target as HTMLElement, { offset: -(headerH + subH + 12) });
         }
       }
     };

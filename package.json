@@ -2,16 +2,22 @@
   "name": "canorous-public-site",
   "version": "1.0.0",
   "private": true,
-  "description": "Canorous Technology — public marketing site. Static export, hosted on Firebase.",
+  "description": "Canorous Technology — public marketing site. Static export, self-hosted on a Hostinger VPS behind Nginx.",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "dev": "next dev --turbopack --port 3000",
+    "dev": "next dev --port 3000",
+    "dev:turbo": "next dev --turbopack --port 3000",
     "build": "next build",
     "preview": "npx serve@latest out -l 5000",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "deploy": "npm run build && firebase deploy --only hosting"
+    "deploy": "npm run build && rsync -az --delete out/ \"$VPS_USER@$VPS_HOST:$VPS_PATH\" && ssh \"$VPS_USER@$VPS_HOST\" 'sudo systemctl reload nginx'",
+    "deploy:firebase": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "clsx": "^2.1.1",
@@ -24,6 +30,7 @@
     "three": "^0.185.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",

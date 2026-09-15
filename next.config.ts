@@ -12,8 +12,8 @@ import type { NextConfig } from 'next';
  *   • next/image must be unoptimized — the optimiser is a server.
  *   • Every route must be statically knowable at build time.
  *
- * The contact form therefore submits from the browser to the portal API on a
- * different origin, rather than posting back to this site.
+ * The contact form and quote tool therefore submit from the browser straight
+ * to Web3Forms (see src/lib/forms.ts) rather than to a backend this site owns.
  */
 const nextConfig: NextConfig = {
   output: 'export',
@@ -30,12 +30,6 @@ const nextConfig: NextConfig = {
   // without it a refresh on a nested route can 404 depending on the rewrite
   // configuration.
   trailingSlash: true,
-
-  env: {
-    // Baked in at build time. A static site has no runtime environment, so this
-    // must be set before `next build`, not on the host.
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api',
-  },
 };
 
 export default nextConfig;

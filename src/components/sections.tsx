@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useGSAP } from '@gsap/react';
 import { gsap } from '@/lib/gsap';
 import { cn } from '@/lib/cn';
 import { usePrefersReducedMotion } from './motion';
@@ -25,7 +26,7 @@ export function StatementSection({
   wash?: boolean;
 }) {
   return (
-    <section className="relative scroll-mt-24 overflow-hidden">
+    <section className="relative scroll-mt-[calc(var(--header-h)+1.5rem)] overflow-hidden">
       {wash && (
         <>
           <div
@@ -35,7 +36,7 @@ export function StatementSection({
           <AmbientField className="opacity-60" />
         </>
       )}
-      <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+      <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <Eyebrow>{eyebrow}</Eyebrow>
         <WordReveal
           text={heading}
@@ -77,23 +78,20 @@ export function ProcessPipeline({
   // The connecting rail draws left-to-right as the whole strip scrolls
   // through view, independent of which stage is "active" — a sense of the
   // whole pipeline advancing, not just a colour flip per card.
-  useEffect(() => {
+  useGSAP(() => {
     const root = ref.current;
     const rail = railRef.current;
     if (!root || !rail || reduced) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        rail,
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          ease: 'none',
-          scrollTrigger: { trigger: root, start: 'top 75%', end: 'bottom 55%', scrub: 0.4 },
-        },
-      );
-    }, root);
-    return () => ctx.revert();
-  }, [reduced]);
+    gsap.fromTo(
+      rail,
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        ease: 'none',
+        scrollTrigger: { trigger: root, start: 'top 75%', end: 'bottom 55%', scrub: 0.4 },
+      },
+    );
+  }, { scope: ref, dependencies: [reduced] });
 
   return (
     <div ref={ref} className="relative">
@@ -187,8 +185,8 @@ export function StatsBand({
   return (
     <section className="relative overflow-hidden border-y border-hairline bg-surface-subtle ctpl-wash">
       <AmbientField className="opacity-60" />
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <LineReveal className="mb-12 max-w-xs" />
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <LineReveal className="mb-8 max-w-xs" />
         <div className="grid gap-10 sm:grid-cols-4">
           {stats.map((stat, i) => (
             <CardReveal key={stat.label} delay={i * 90}>
@@ -302,19 +300,16 @@ export function StageFlow({
     return () => obs.disconnect();
   }, []);
 
-  useEffect(() => {
+  useGSAP(() => {
     const el = root.current;
     if (!el || reduced) return;
-    const ctx = gsap.context(() => {
-      const common = {
-        ease: 'none' as const,
-        scrollTrigger: { trigger: el, start: 'top 85%', end: 'bottom 60%', scrub: 0.4 },
-      };
-      if (vRailRef.current) gsap.fromTo(vRailRef.current, { scaleY: 0 }, { scaleY: 1, ...common });
-      if (hRailRef.current) gsap.fromTo(hRailRef.current, { scaleX: 0 }, { scaleX: 1, ...common });
-    }, el);
-    return () => ctx.revert();
-  }, [reduced]);
+    const common = {
+      ease: 'none' as const,
+      scrollTrigger: { trigger: el, start: 'top 85%', end: 'bottom 60%', scrub: 0.4 },
+    };
+    if (vRailRef.current) gsap.fromTo(vRailRef.current, { scaleY: 0 }, { scaleY: 1, ...common });
+    if (hRailRef.current) gsap.fromTo(hRailRef.current, { scaleX: 0 }, { scaleX: 1, ...common });
+  }, { scope: root, dependencies: [reduced] });
 
   return (
     <div ref={root} className={cn('relative', className)}>

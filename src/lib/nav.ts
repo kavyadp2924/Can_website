@@ -58,13 +58,3 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
 ];
-
-export const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? 'http://localhost:3001';
-
-/**
- * The API the contact form posts to.
- *
- * Baked in at build time — a static export has no runtime environment, so this
- * has to be set before `next build`, not on the host.
- */
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';

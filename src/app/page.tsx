@@ -88,8 +88,8 @@ export default function HomePage() {
       />
 
       {/* ──────────────────────────────────────── the pipeline ── */}
-      <section className="relative scroll-mt-24 border-y border-hairline bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+      <section className="relative scroll-mt-[calc(var(--header-h)+1.5rem)] border-y border-hairline bg-surface">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
           <SectionHeading
             eyebrow="How the work moves"
             title="One model, start to finish"
@@ -100,8 +100,8 @@ export default function HomePage() {
       </section>
 
       {/* ─────────────────────────────────────── capabilities ── */}
-      <section className="relative scroll-mt-24">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+      <section className="relative scroll-mt-[calc(var(--header-h)+1.5rem)]">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
           <SectionHeading
             eyebrow="What we do"
             title="Six disciplines, one accountable team"
@@ -122,8 +122,8 @@ export default function HomePage() {
       />
 
       {/* ───────────────────────────────────────── audiences ── */}
-      <section className="relative scroll-mt-24">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+      <section className="relative scroll-mt-[calc(var(--header-h)+1.5rem)]">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
           <SectionHeading
             eyebrow="Who we work with"
             title="Different industries, the same underlying problem"

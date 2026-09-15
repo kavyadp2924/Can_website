@@ -72,7 +72,7 @@ export default function AiPage() {
         variant="ai"
         primary={{ href: '/contact/', label: 'Talk to us' }}
         secondary={{ href: '#floorplan3d', label: 'See the products' }}
-        readout={['Volume · resolving', 'cells 343 · scan live']}
+        readout={['Agents · orchestrating', 'nodes 5 · tasks live']}
       />
 
       <StickySectionNav

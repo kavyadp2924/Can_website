@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { PageHero, Section } from '@/components/ui';
 import { ContactForm } from './contact-form';
 
@@ -46,6 +47,22 @@ export default function ContactPage() {
               <p className="mt-3 text-sm text-ink-muted">
                 Coimbatore, Tamil Nadu, India
               </p>
+            </div>
+
+            <div className="rounded-lg border border-hairline bg-surface p-6">
+              <p className="text-eyebrow uppercase tracking-eyebrow text-ink-muted">
+                Prefer a guided form?
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                If you already know the service, timeline and budget, our quote tool walks through
+                it step by step instead.
+              </p>
+              <Link
+                href="/quote/"
+                className="mt-3 inline-block text-sm font-semibold text-link underline underline-offset-4"
+              >
+                Get a quote
+              </Link>
             </div>
 
             <div className="rounded-lg border border-hairline bg-white p-6 shadow-card">

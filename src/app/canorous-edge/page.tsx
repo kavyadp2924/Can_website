@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { CtaBand, FeatureGrid, Section, StickySectionNav } from '@/components/ui';
+import { CtaBand, FeatureGrid, Section, SectionHeading, StickySectionNav } from '@/components/ui';
 import { FeatureHero } from '@/components/feature-hero';
 import { FadeIn } from '@/components/motion';
 import { CardReveal, Reveal, SpotlightCard } from '@/components/motion-primitives';
@@ -128,7 +128,7 @@ export default function CanorousEdgePage() {
         variant="data"
         primary={{ href: '/contact/', label: 'Apply now' }}
         secondary={{ href: '#program', label: 'About the program' }}
-        readout={['Dataset · fitting', 'features 30 · epochs live']}
+        readout={['Network · training', 'layers 4 · epochs live']}
       />
 
       <StickySectionNav
@@ -166,13 +166,21 @@ export default function CanorousEdgePage() {
         <FeatureGrid items={HIGHLIGHTS} />
       </Section>
 
-      <Section
-        id="path"
-        index="02"
-        eyebrow="Your Learning Path"
-        title="A structured journey from beginner to industry-ready professional"
-      >
-        <ProcessRail stages={PATH} />
+      {/* Two columns for the same reason as the engineering workflow: the rail
+          is one narrow column, so stacking it under a max-w-2xl heading left
+          the right half of the section empty. */}
+      <Section id="path">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
+          <div className="lg:sticky lg:top-[calc(var(--header-h)+var(--subnav-h)+2.5rem)] lg:self-start">
+            <SectionHeading
+              index="02"
+              eyebrow="Your Learning Path"
+              title="A structured journey from beginner to industry-ready professional"
+              className="mb-0 max-w-none"
+            />
+          </div>
+          <ProcessRail stages={PATH} />
+        </div>
       </Section>
 
       <Section

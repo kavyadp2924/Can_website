@@ -1,23 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { API_URL } from '@/lib/nav';
+import { Input, Textarea } from '@/components/form-fields';
+import { submitForm } from '@/lib/forms';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 /**
  * Contact form.
  *
- * This site is a static export with no server of its own, so the form posts
- * straight from the browser to the portal API on a different origin. Two
- * consequences follow:
- *
- *   • The API must allow this origin through CORS, and must expose the endpoint
- *     publicly with its own rate limit — it is reachable by anyone.
- *   • Nothing here can be trusted. The honeypot and the timing check below are
- *     conveniences that cut obvious bot traffic; the real validation and rate
- *     limiting have to happen server-side, because a determined submitter will
- *     simply call the endpoint directly.
+ * This site is a static export with no server of its own, so submissions go
+ * straight from the browser to Web3Forms (see src/lib/forms.ts) rather than
+ * to a backend this site owns. The honeypot and timing check below are
+ * client-side conveniences that cut obvious bot traffic on top of Web3Forms'
+ * own spam filtering — neither is a substitute for the other.
  */
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
@@ -26,26 +22,22 @@ export function ContactForm() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const form = new FormData(event.currentTarget);
+    if (form.get('website')) return; // honeypot tripped — silently drop
+    if (Date.now() - renderedAt < 1500) return; // submitted implausibly fast
+
     setStatus('sending');
     setError(null);
 
-    const form = new FormData(event.currentTarget);
-
     try {
-      const response = await fetch(`${API_URL}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: form.get('name'),
-          email: form.get('email'),
-          company: form.get('company'),
-          message: form.get('message'),
-          website: form.get('website'), // honeypot
-          elapsedMs: Date.now() - renderedAt,
-        }),
+      const result = await submitForm('New contact form message', {
+        name: form.get('name'),
+        email: form.get('email'),
+        company: form.get('company'),
+        message: form.get('message'),
       });
-
-      if (!response.ok) throw new Error('Request failed');
+      if (!result.ok) throw new Error(result.message ?? 'Request failed');
       setStatus('sent');
     } catch {
       setStatus('error');
@@ -89,25 +81,19 @@ export function ContactForm() {
       )}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Your name" name="name" required autoComplete="name" />
-        <Field label="Work email" name="email" type="email" required autoComplete="email" />
+        <Input label="Your name" name="name" required autoComplete="name" />
+        <Input label="Work email" name="email" type="email" required autoComplete="email" />
       </div>
 
-      <Field label="Company" name="company" autoComplete="organization" />
+      <Input label="Company" name="company" autoComplete="organization" />
 
-      <div className="space-y-1.5">
-        <label htmlFor="message" className="block text-sm font-medium text-ink-secondary">
-          What are you working on?
-        </label>
-        <textarea
-          id="message"
-          name="message"
-          required
-          rows={6}
-          className="w-full rounded border border-border-strong bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-ui ease-ctpl-out focus-visible:outline-none focus-visible:border-brand-blue focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-1"
-          placeholder="A couple of sentences is plenty to start."
-        />
-      </div>
+      <Textarea
+        label="What are you working on?"
+        name="message"
+        required
+        rows={6}
+        placeholder="A couple of sentences is plenty to start."
+      />
 
       {/*
         Honeypot. Hidden with inline styles rather than a utility class, because
@@ -138,36 +124,5 @@ export function ContactForm() {
         {status === 'sending' ? 'Sending…' : 'Send message'}
       </button>
     </form>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = 'text',
-  required,
-  autoComplete,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  required?: boolean;
-  autoComplete?: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label htmlFor={name} className="block text-sm font-medium text-ink-secondary">
-        {label}
-        {!required && <span className="ml-1 text-ink-subtle">(optional)</span>}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        required={required}
-        autoComplete={autoComplete}
-        className="h-11 w-full rounded border border-border-strong bg-white px-3 text-sm text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-ui ease-ctpl-out focus-visible:outline-none focus-visible:border-brand-blue focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-1"
-      />
-    </div>
   );
 }

@@ -104,7 +104,7 @@ export default function VisualizationPage() {
             <CardReveal key={project.id} delay={index * 90}>
               <article
                 id={project.id}
-                className="group scroll-mt-36 overflow-hidden rounded-xl border border-hairline bg-white shadow-card transition-[box-shadow,border-color,background-color,transform] duration-ui ease-ctpl-out hover:border-card-hover-edge hover:bg-card-hover hover:shadow-raised motion-safe:hover:scale-[1.008]"
+                className="group scroll-mt-[calc(var(--header-h)+var(--subnav-h)+0.75rem)] overflow-hidden rounded-xl border border-hairline bg-white shadow-card transition-[box-shadow,border-color,background-color,transform] duration-ui ease-ctpl-out hover:border-card-hover-edge hover:bg-card-hover hover:shadow-raised motion-safe:hover:scale-[1.008]"
               >
                 <span aria-hidden="true" className="block h-0.5 bg-ctpl-gradient" />
 
@@ -240,7 +240,7 @@ export default function VisualizationPage() {
       {/* ────────────────────────────────────────────── closing ── */}
       <section className="border-y border-hairline bg-ctpl-hero-wash bg-surface-subtle">
         <ScrollBackdrop />
-        <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
+        <div className="mx-auto max-w-3xl px-4 py-14 text-center sm:px-6">
           <Reveal clip>
             <Eyebrow className="text-ink-muted">Visualize before you build</Eyebrow>
             <h2 className="mt-4 font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">

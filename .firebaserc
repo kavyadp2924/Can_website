@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "canorous-website"
-  }
+    "default": "webhosting-f544d",
+    "staging": "webhosting-f544d"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
 import { AmbientField, BracketMotif, Eyebrow, GradientText, PrimaryLink, SecondaryLink } from './ui';
 import { usePointerDepth } from '@/lib/use-pointer-depth';
 import { gsap } from '@/lib/gsap';
@@ -74,26 +75,23 @@ export function FeatureHero({
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
+  useGSAP(() => {
     if (reduced) return;
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      tl.from('[data-fh="grid"]', { opacity: 0, duration: 1.1 })
-        .from('[data-fh="eyebrow"]', { opacity: 0, y: 14, duration: 0.6 }, 0.15)
-        .from('[data-fh="bracket"]', { opacity: 0, duration: 0.9, stagger: 0.05 }, 0.15)
-        .from(canvasWrapRef.current, { opacity: 0, scale: 0.94, duration: 1.3 }, 0.3)
-        .from(
-          '[data-fh="line"]',
-          { yPercent: 120, opacity: 0, duration: 1, stagger: 0.12, ease: 'power4.out' },
-          0.45,
-        )
-        .from('[data-fh="lede"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
-        .from('[data-fh="body"]', { opacity: 0, y: 18, duration: 0.7, stagger: 0.1 }, '-=0.5')
-        .from('[data-fh="cta"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.45')
-        .from('[data-fh="readout"]', { opacity: 0, x: 12, duration: 0.7 }, '-=0.45');
-    }, sectionRef);
-    return () => ctx.revert();
-  }, [reduced]);
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('[data-fh="grid"]', { opacity: 0, duration: 1.1 })
+      .from('[data-fh="eyebrow"]', { opacity: 0, y: 14, duration: 0.6 }, 0.15)
+      .from('[data-fh="bracket"]', { opacity: 0, duration: 0.9, stagger: 0.05 }, 0.15)
+      .from(canvasWrapRef.current, { opacity: 0, scale: 0.94, duration: 1.3 }, 0.3)
+      .from(
+        '[data-fh="line"]',
+        { yPercent: 120, opacity: 0, duration: 1, stagger: 0.12, ease: 'power4.out' },
+        0.45,
+      )
+      .from('[data-fh="lede"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.55')
+      .from('[data-fh="body"]', { opacity: 0, y: 18, duration: 0.7, stagger: 0.1 }, '-=0.5')
+      .from('[data-fh="cta"]', { opacity: 0, y: 22, duration: 0.8 }, '-=0.45')
+      .from('[data-fh="readout"]', { opacity: 0, x: 12, duration: 0.7 }, '-=0.45');
+  }, { scope: sectionRef, dependencies: [reduced] });
 
   return (
     <section
@@ -148,7 +146,7 @@ export function FeatureHero({
 
       <div
         ref={depthRef}
-        className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 py-20 sm:px-6 sm:py-28 lg:grid-cols-2"
+        className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2"
       >
         <div>
           <div data-fh="eyebrow">

@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { GradientText } from './ui';
-import { PORTAL_URL } from '@/lib/nav';
 
 /**
  * The footer carries the full sitemap, including the pages the header no longer
@@ -34,6 +33,7 @@ const COLUMNS = [
       { name: 'About', href: '/about/' },
       { name: 'Work', href: '/work/' },
       { name: 'Contact', href: '/contact/' },
+      { name: 'Get a quote', href: '/quote/' },
       { name: 'Privacy', href: '/privacy/' },
     ],
   },
@@ -41,8 +41,8 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-hairline bg-surface">
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+    <footer className="mt-16 border-t border-hairline bg-surface">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="flex flex-col gap-10 sm:flex-row sm:justify-between">
           <div className="max-w-xs">
             <p className="font-display text-xl font-bold tracking-wide text-ink">
@@ -51,12 +51,6 @@ export function SiteFooter() {
             <p className="mt-3 text-sm leading-relaxed text-ink-muted">
               Engineering, simulation and real-time 3D under one roof. ISO 9001:2015 certified.
             </p>
-            <a
-              href={PORTAL_URL}
-              className="mt-4 inline-block text-sm font-medium text-link underline underline-offset-4"
-            >
-              Employee login
-            </a>
           </div>
 
           <nav aria-label="Footer" className="grid grid-cols-2 gap-10 sm:grid-cols-3">

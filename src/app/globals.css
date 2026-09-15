@@ -112,6 +112,10 @@
   --ctpl-font-display: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
   --ctpl-font-body: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif;
   --ctpl-font-mono: ui-monospace, 'Courier New', monospace;
+
+  /* Persistent chrome. Header never hides; in-page nav sticks directly under it. */
+  --header-h: 4.5rem;
+  --subnav-h: 4.5rem;
 }
 
 /* Hero atmosphere grid — fades/parallaxes behind the hero copy. Consumed by

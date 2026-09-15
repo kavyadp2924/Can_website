@@ -4,6 +4,7 @@ import './globals.css';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { SmoothScroll } from '@/components/smooth-scroll';
+import { Analytics } from '@/components/analytics';
 
 /**
  * next/font downloads and self-hosts these at build time, so the static export
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
+        <Analytics />
       </body>
     </html>
   );

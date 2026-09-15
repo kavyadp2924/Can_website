@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { CtaBand, FeatureGrid, Section, StickySectionNav } from '@/components/ui';
+import { CtaBand, FeatureGrid, Section, SectionHeading, StickySectionNav } from '@/components/ui';
 import { FeatureHero } from '@/components/feature-hero';
 import { FadeIn } from '@/components/motion';
 import { Reveal } from '@/components/motion-primitives';
@@ -154,14 +154,27 @@ export default function EngineeringPage() {
         <CapabilityList title="Analysis Capabilities" items={ANALYSIS_CAPABILITIES} />
       </Section>
 
-      <Section
-        id="workflow"
-        index="03"
-        eyebrow="OpenCAD-Based Engineering Workflow"
-        title="Six stages, run as one connected process"
-        intro="Our engineering workflow combines CAD modelling with analysis and design validation to create a structured development process."
-      >
-        <ProcessRail stages={WORKFLOW} />
+      {/*
+        Composed as two columns rather than heading-above-content: the rail is
+        a narrow single column of stages, so stacking it under a max-w-2xl
+        heading left the right half of the section empty on desktop. Pairing
+        it with a sticky heading uses the width and keeps the heading in view
+        while the six stages scroll past it — which is the point of a rail
+        that draws as you read.
+      */}
+      <Section id="workflow">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
+          <div className="lg:sticky lg:top-[calc(var(--header-h)+var(--subnav-h)+2.5rem)] lg:self-start">
+            <SectionHeading
+              index="03"
+              eyebrow="OpenCAD-Based Engineering Workflow"
+              title="Six stages, run as one connected process"
+              intro="Our engineering workflow combines CAD modelling with analysis and design validation to create a structured development process."
+              className="mb-0 max-w-none"
+            />
+          </div>
+          <ProcessRail stages={WORKFLOW} />
+        </div>
       </Section>
 
       <Section
