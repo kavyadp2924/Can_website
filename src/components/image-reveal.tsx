@@ -3,6 +3,7 @@
 import { useRef, type ReactNode } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap } from '@/lib/gsap';
+import { alreadyVisible } from './motion-primitives';
 import { usePrefersReducedMotion } from './motion';
 import { cn } from '@/lib/cn';
 
@@ -19,7 +20,7 @@ export function ImageReveal({
 
   useGSAP(() => {
     const el = ref.current;
-    if (!el || reduced) return;
+    if (!el || reduced || alreadyVisible(el)) return;
 
     gsap.fromTo(
       el,

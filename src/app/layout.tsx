@@ -13,11 +13,19 @@ import { Analytics } from '@/components/analytics';
  */
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
+/**
+ * `optional`, not `swap`, for the display face. Headlines are large enough that
+ * swapping from the fallback to Space Grotesk re-wraps them — on a phone the
+ * Work heading dropped from three lines to two and shoved the whole gallery up
+ * 52px (a 0.22 layout-shift score). The file is preloaded, so it is normally in
+ * hand before first paint; on a slow first visit the page keeps the fallback
+ * for that view rather than jumping mid-read, and the next page has it cached.
+ */
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   variable: '--font-space-grotesk',
-  display: 'swap',
+  display: 'optional',
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://canorous.com';

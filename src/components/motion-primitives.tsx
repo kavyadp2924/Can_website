@@ -8,6 +8,16 @@ import { usePrefersReducedMotion } from './motion';
 import { cn } from '@/lib/cn';
 
 /**
+ * True when an element is already on screen as scripts attach. Entrance
+ * animations skip these: the static HTML has been showing them since first
+ * paint, so hiding them now and replaying them in blanks content the visitor
+ * can already see — and makes a loaded page look like it is still loading.
+ */
+export function alreadyVisible(el: Element) {
+  return el.getBoundingClientRect().top < window.innerHeight;
+}
+
+/**
  * Scroll-triggered reveal built on GSAP ScrollTrigger.
  *
  * Unlike a plain fade, it can wipe in via `clip-path` (a mask reveal) and uses a
@@ -32,7 +42,7 @@ export function Reveal({
 
   useGSAP(() => {
     const el = ref.current;
-    if (!el || reduced) return;
+    if (!el || reduced || alreadyVisible(el)) return;
 
     const vars: gsap.TweenVars = {
       opacity: 0,
@@ -85,26 +95,39 @@ export function SpotlightCard({
     let cmx = 50;
     let cmy = 50;
 
-    const onMove = (event: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      mx = ((event.clientX - rect.left) / rect.width) * 100;
-      my = ((event.clientY - rect.top) / rect.height) * 100;
-    };
-    const onLeave = () => {
-      mx = 50;
-      my = 50;
-    };
+    // The easing loop only runs while the glow is still travelling. It used to
+    // run forever on every card, writing two CSS variables per card per frame —
+    // constant style recalculation on pages with twenty-plus cards, all to move
+    // a glow that is invisible unless the card is hovered.
     const loop = () => {
       cmx += (mx - cmx) * 0.15;
       cmy += (my - cmy) * 0.15;
       el.style.setProperty('--mx', `${cmx.toFixed(2)}%`);
       el.style.setProperty('--my', `${cmy.toFixed(2)}%`);
-      raf = requestAnimationFrame(loop);
+      if (Math.abs(mx - cmx) > 0.1 || Math.abs(my - cmy) > 0.1) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        raf = 0;
+      }
+    };
+    const kick = () => {
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+
+    const onMove = (event: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      mx = ((event.clientX - rect.left) / rect.width) * 100;
+      my = ((event.clientY - rect.top) / rect.height) * 100;
+      kick();
+    };
+    const onLeave = () => {
+      mx = 50;
+      my = 50;
+      kick();
     };
 
     el.addEventListener('mousemove', onMove);
     el.addEventListener('mouseleave', onLeave);
-    raf = requestAnimationFrame(loop);
 
     return () => {
       el.removeEventListener('mousemove', onMove);
@@ -174,7 +197,7 @@ export function CardReveal({
 
   useGSAP(() => {
     const el = ref.current;
-    if (!el || reduced) return;
+    if (!el || reduced || alreadyVisible(el)) return;
 
     gsap.from(el, {
       opacity: 0,
@@ -221,10 +244,13 @@ export function WordReveal({
   const reduced = usePrefersReducedMotion();
   const words = text.split(' ');
   const Tag = as;
+  const cssIntro = as === 'h1';
 
   useGSAP(() => {
     const el = ref.current;
-    if (!el || reduced) return;
+    // A page's h1 animates in CSS from the first painted frame (see below);
+    // GSAP only handles headings further down the page.
+    if (!el || reduced || as === 'h1' || alreadyVisible(el)) return;
 
     gsap.from(el.querySelectorAll('.w-inner'), {
       yPercent: 115,
@@ -233,13 +259,18 @@ export function WordReveal({
       stagger: 0.07,
       scrollTrigger: { trigger: el, start: 'top 85%', once: true },
     });
-  }, { scope: ref, dependencies: [reduced, text, accent] });
+  }, { scope: ref, dependencies: [reduced, text, accent, as] });
 
   return (
     <Tag ref={ref} className={cn('font-display font-bold leading-[1.05] text-ink', className)}>
       {words.map((word, i) => (
         <span key={`w-${word}-${i}`} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
-          <span className="w-inner inline-block">{word}</span>
+          <span
+            className={cn('w-inner inline-block', cssIntro && 'intro-line')}
+            style={cssIntro ? ({ '--d': `${i * 50}ms` } as React.CSSProperties) : undefined}
+          >
+            {word}
+          </span>
         </span>
       )).reduce<React.ReactNode[]>((acc, node, i) => {
         if (i > 0) acc.push(' ');
@@ -251,7 +282,12 @@ export function WordReveal({
           {' '}
           <span className="inline-block overflow-hidden pb-[0.08em] align-bottom">
             <span
-              className={cn('w-inner inline-block bg-ctpl-gradient bg-clip-text text-transparent', shimmer && 'animate-shimmer')}
+              className={cn(
+                'w-inner inline-block bg-ctpl-gradient bg-clip-text text-transparent',
+                shimmer && 'animate-shimmer',
+                cssIntro && 'intro-line',
+              )}
+              style={cssIntro ? ({ '--d': `${words.length * 50}ms` } as React.CSSProperties) : undefined}
             >
               {accent}
             </span>
@@ -272,7 +308,7 @@ export function LineReveal({ className }: { className?: string }) {
 
   useGSAP(() => {
     const el = ref.current;
-    if (!el || reduced) return;
+    if (!el || reduced || alreadyVisible(el)) return;
 
     gsap.fromTo(
       el,
@@ -354,7 +390,7 @@ export function ImageReveal({
 
   useGSAP(() => {
     const el = ref.current;
-    if (!el || reduced) return;
+    if (!el || reduced || alreadyVisible(el)) return;
 
     gsap.from(el, {
       clipPath: 'inset(0 0 14% 0)',

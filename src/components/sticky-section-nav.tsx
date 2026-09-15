@@ -33,7 +33,7 @@ export function StickySectionNav({
   return (
     <nav
       aria-label="On this page"
-      className="sticky top-20 z-20 -mx-4 mb-10 border-y border-hairline bg-white/90 px-4 py-3 backdrop-blur-md lg:top-24"
+      className="sticky top-20 z-20 -mx-4 mb-10 border-y border-hairline bg-white/95 px-4 py-3 lg:top-24"
     >
       <ul className="mx-auto flex max-w-6xl gap-1 overflow-x-auto">
         {items.map((item) => (

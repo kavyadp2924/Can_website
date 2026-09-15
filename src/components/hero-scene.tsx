@@ -31,7 +31,8 @@ import { usePrefersReducedMotion } from './motion';
  *    (`pointer-events: none` on its wrapper) — R3F's built-in `state.pointer`
  *    would never fire.
  *  • `frameloop="demand"` is deliberately NOT used, because the scene animates
- *    continuously; instead the whole canvas unmounts once scrolled past.
+ *    continuously; instead the render loop is stopped (`active={false}`) while
+ *    the hero is scrolled out of view.
  */
 
 const CTPL_RED = '#D71E1E';
@@ -311,7 +312,7 @@ function useSceneInput(reduced: boolean) {
   return { pointer, scroll };
 }
 
-export default function HeroScene() {
+export default function HeroScene({ active = true }: { active?: boolean }) {
   const reduced = usePrefersReducedMotion();
   const { pointer, scroll } = useSceneInput(reduced);
 
@@ -327,6 +328,7 @@ export default function HeroScene() {
       // Capped device pixel ratio — full 3x on a phone costs battery for detail
       // that is not visible.
       dpr={[1, 1.5]}
+      frameloop={active ? 'always' : 'never'}
       camera={{ position: [0, 0, 6], fov: 42 }}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       // The canvas is decorative; its meaning is carried by the headline beside it.
