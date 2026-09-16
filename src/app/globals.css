@@ -118,6 +118,24 @@
   --subnav-h: 4.5rem;
 }
 
+/* Metric-matched stand-in for Space Grotesk while it downloads (see the
+   comment on `spaceGrotesk` in app/layout.tsx). Measured against all 373
+   display-font strings on the site: bold Space Grotesk is 90.23% the width of
+   bold Arial (p10–p90: 86–94%). Ascent/descent are Space Grotesk's own
+   (0.984em / 0.292em), divided by the size-adjust so the line box matches too.
+   The weight range stops the browser synthesising a faux bold on top.
+   Android has no Arial; `local()` misses there and the stack falls through to
+   system-ui, exactly as it did with next/font's generated fallback. */
+@font-face {
+  font-family: 'CTPL Display Fallback';
+  src: local('Arial Bold'), local('Arial-BoldMT');
+  font-weight: 100 900;
+  size-adjust: 90.3%;
+  ascent-override: 108.97%;
+  descent-override: 32.34%;
+  line-gap-override: 0%;
+}
+
 /* Hero atmosphere grid — fades/parallaxes behind the hero copy. Consumed by
    the cinematic entrance; masked so it reads as depth, not a pattern. */
 .hero-grid {

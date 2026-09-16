@@ -156,10 +156,13 @@ export function Parallax({
 }) {
   const reduced = usePrefersReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
-  const [offset, setOffset] = useState(0);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (reduced) return;
+    if (reduced) {
+      innerRef.current?.style.removeProperty('transform');
+      return;
+    }
     const node = ref.current;
     if (!node) return;
 
@@ -179,7 +182,11 @@ export function Parallax({
       frame = requestAnimationFrame(() => {
         const rect = node.getBoundingClientRect();
         const centre = rect.top + rect.height / 2 - window.innerHeight / 2;
-        setOffset(centre * -speed);
+        // Written straight to the DOM: this runs every scroll frame, and routing
+        // it through React state re-rendered the subtree each time.
+        if (innerRef.current) {
+          innerRef.current.style.transform = `translate3d(0, ${(centre * -speed).toFixed(1)}px, 0)`;
+        }
         frame = 0;
       });
     };
@@ -196,7 +203,7 @@ export function Parallax({
 
   return (
     <div ref={ref} className={className}>
-      <div style={{ transform: reduced ? undefined : `translate3d(0, ${offset}px, 0)` }}>
+      <div ref={innerRef}>
         {children}
       </div>
     </div>
