@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CtaBand, FeatureGrid, PageHero, Section } from '@/components/ui';
-import { FadeIn } from '@/components/motion';
+import { CardReveal, SpotlightCard } from '@/components/motion-primitives';
 
 export const metadata: Metadata = {
   title: 'Solutions',
@@ -141,24 +141,36 @@ export default function SolutionsPage() {
       <Section eyebrow="In detail" title="Capability pages">
         <div className="grid gap-5 sm:grid-cols-3">
           {DEEP_DIVES.map((item, index) => (
-            <FadeIn key={item.href} delay={index * 80}>
-              <Link
-                href={item.href}
-                className="group relative block h-full overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-shadow hover:shadow-raised"
-              >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-ctpl-gradient transition-transform duration-300 group-hover:scale-x-100"
-                />
-                <h3 className="font-display text-lg font-semibold text-ink group-hover:text-link">
-                  {item.name}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-muted">{item.desc}</p>
-                <span aria-hidden="true" className="mt-4 block text-sm font-semibold text-link">
-                  Read more →
-                </span>
-              </Link>
-            </FadeIn>
+            <CardReveal key={item.href} delay={index * 80} className="h-full">
+              <SpotlightCard className="h-full">
+                <Link
+                  href={item.href}
+                  className="group relative block h-full overflow-hidden rounded-lg border border-hairline bg-white p-6 shadow-card transition-[box-shadow,border-color,background-color] duration-ui hover:border-card-hover-edge hover:bg-card-hover hover:shadow-raised"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-ctpl-gradient transition-transform duration-300 group-hover:scale-x-100"
+                  />
+                  <h3 className="font-display text-lg font-semibold text-ink transition-colors duration-ui group-hover:text-link">
+                    {item.name}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-muted">{item.desc}</p>
+                  <span className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-link">
+                    Read more
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                      className="h-3.5 w-3.5 transition-transform duration-ui ease-ctpl-out group-hover:translate-x-1.5"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </span>
+                </Link>
+              </SpotlightCard>
+            </CardReveal>
           ))}
         </div>
       </Section>

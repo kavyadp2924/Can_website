@@ -2,10 +2,13 @@
  * Site navigation — one definition, used by the desktop nav, the mobile drawer
  * and the footer.
  *
- * Deliberately two items. Visualisation is the work the company leads with, so
- * it gets a top-level slot of its own; everything else collapses into a single
- * "Explore" menu. A flat list of five or six top-level items spreads attention
- * evenly across things that are not equally important.
+ * The four capability destinations sit at the top level, because those are what
+ * someone arrives wanting; "Explore" holds only the company pages behind them.
+ *
+ * Note that the pages NOT listed here still exist and still route — the
+ * solutions tree, the work index, the presentation product. They are reached
+ * from the footer and from in-page links rather than from the header, which
+ * keeps the header about what the company sells rather than about the sitemap.
  */
 
 export interface NavChild {
@@ -27,44 +30,21 @@ export const NAV_ITEMS: NavItem[] = [
     href: '/visualization',
   },
   {
+    name: 'Engineering',
+    href: '/engineering',
+  },
+  {
+    name: 'AI',
+    href: '/ai',
+  },
+  {
+    name: 'Canorous Edge',
+    href: '/canorous-edge',
+  },
+  {
     name: 'Explore',
-    href: '/solutions',
+    href: '/about',
     children: [
-      {
-        name: 'Solutions',
-        href: '/solutions',
-        description: 'Engineering, real-time 3D and immersive work by industry',
-      },
-      {
-        name: 'Engineering & Simulation',
-        href: '/solutions/engineering',
-        description: 'CAD, FEA and CFD through to production',
-      },
-      {
-        name: 'Real-Time 3D Studio',
-        href: '/solutions/real-time-3d',
-        description: 'Unreal, Unity and browser streaming',
-      },
-      {
-        name: 'Immersive Architecture',
-        href: '/solutions/immersive-architecture',
-        description: 'Walkable, configurable, decided in one meeting',
-      },
-      {
-        name: 'Presentation',
-        href: '/products/presentation',
-        description: 'Live 3D in the room instead of a slide',
-      },
-      {
-        name: 'Canorous Edge',
-        href: '/canorous-edge',
-        description: 'Hands-on AI training run by the engineering team',
-      },
-      {
-        name: 'Work',
-        href: '/work',
-        description: 'Selected projects across every discipline',
-      },
       {
         name: 'About',
         href: '/about',

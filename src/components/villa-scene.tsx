@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { ContactShadows, Environment } from '@react-three/drei';
+import { ContactShadows, Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 import { usePrefersReducedMotion } from './motion';
 
@@ -279,10 +279,20 @@ export default function VillaScene({
           far={12}
         />
 
-        {/* Image-based lighting for the glass and pool. `preset` ships with drei
-            and is bundled — no external CDN request, which matters because this
-            is a static export with a strict origin policy. */}
-        <Environment preset="city" />
+        {/*
+          Image-based lighting for the glass and pool, built from a handful of
+          `Lightformer` panels rather than an `Environment preset`. Presets
+          look convenient but are not actually bundled — they fetch an HDR
+          from a third-party CDN at runtime, which fails outright on a static
+          export with no guaranteed network path to it (and would be a stray
+          external origin even when it succeeds). This synthesises an
+          equivalent soft studio environment entirely from local geometry.
+        */}
+        <Environment resolution={256}>
+          <Lightformer intensity={2.5} color="#dceaff" position={[0, 8, 0]} scale={[20, 20, 1]} rotation={[-Math.PI / 2, 0, 0]} />
+          <Lightformer intensity={1.4} color="#fff2df" position={[10, 4, 8]} scale={[8, 8, 1]} />
+          <Lightformer intensity={1} color="#c8bfa8" position={[-10, 2, -6]} scale={[8, 8, 1]} />
+        </Environment>
 
         <CameraRig progress={progress} />
       </Suspense>

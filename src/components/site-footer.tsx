@@ -2,15 +2,30 @@ import Link from 'next/link';
 import { GradientText } from './ui';
 import { PORTAL_URL } from '@/lib/nav';
 
+/**
+ * The footer carries the full sitemap, including the pages the header no longer
+ * links to (the solutions tree, work, presentation). Removing something from the
+ * header is an editorial decision about emphasis; it should not make the page
+ * unreachable.
+ */
 const COLUMNS = [
+  {
+    heading: 'What we do',
+    links: [
+      { name: '3D Visualization', href: '/visualization/' },
+      { name: 'Engineering', href: '/engineering/' },
+      { name: 'AI', href: '/ai/' },
+      { name: 'Canorous Edge', href: '/canorous-edge/' },
+    ],
+  },
   {
     heading: 'Solutions',
     links: [
       { name: 'Engineering & Simulation', href: '/solutions/engineering/' },
       { name: 'Real-Time 3D Studio', href: '/solutions/real-time-3d/' },
       { name: 'Immersive Architecture', href: '/solutions/immersive-architecture/' },
-      { name: '3D Visualization', href: '/visualization/' },
       { name: 'All solutions', href: '/solutions/' },
+      { name: 'Presentation', href: '/products/presentation/' },
     ],
   },
   {
@@ -18,14 +33,7 @@ const COLUMNS = [
     links: [
       { name: 'About', href: '/about/' },
       { name: 'Work', href: '/work/' },
-      { name: 'Canorous Edge', href: '/canorous-edge/' },
       { name: 'Contact', href: '/contact/' },
-    ],
-  },
-  {
-    heading: 'More',
-    links: [
-      { name: 'Presentation', href: '/products/presentation/' },
       { name: 'Privacy', href: '/privacy/' },
     ],
   },

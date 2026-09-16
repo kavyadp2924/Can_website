@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Hero } from '@/components/hero';
-import { CtaBand } from '@/components/ui';
-import { FadeIn, ScrollProgress } from '@/components/motion';
+import { CtaBand, SectionHeading } from '@/components/ui';
+import { ScrollProgress } from '@/components/motion';
 import {
   AudiencesShowcase,
   DisciplinesShowcase,
@@ -90,19 +90,11 @@ export default function HomePage() {
       {/* ──────────────────────────────────────── the pipeline ── */}
       <section className="relative scroll-mt-24 border-y border-hairline bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-          <FadeIn>
-            <div className="mb-12 max-w-2xl">
-              <p className="text-eyebrow uppercase tracking-eyebrow text-link">How the work moves</p>
-              <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
-                One model, start to finish
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-ink-secondary">
-                Each stage inherits the last rather than reinterpreting it. That is the whole point —
-                every handoff between vendors is a chance for the geometry, the tolerances or the
-                intent to drift.
-              </p>
-            </div>
-          </FadeIn>
+          <SectionHeading
+            eyebrow="How the work moves"
+            title="One model, start to finish"
+            intro="Each stage inherits the last rather than reinterpreting it. That is the whole point — every handoff between vendors is a chance for the geometry, the tolerances or the intent to drift."
+          />
           <ProcessPipeline stages={PIPELINE} />
         </div>
       </section>
@@ -110,18 +102,11 @@ export default function HomePage() {
       {/* ─────────────────────────────────────── capabilities ── */}
       <section className="relative scroll-mt-24">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-          <FadeIn>
-            <div className="mb-12 max-w-2xl">
-              <p className="text-eyebrow uppercase tracking-eyebrow text-link">What we do</p>
-              <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
-                Six disciplines, one accountable team
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-ink-secondary">
-                Usually these live in six different companies, and the coordination between them
-                becomes your job.
-              </p>
-            </div>
-          </FadeIn>
+          <SectionHeading
+            eyebrow="What we do"
+            title="Six disciplines, one accountable team"
+            intro="Usually these live in six different companies, and the coordination between them becomes your job."
+          />
           <DisciplinesShowcase items={DISCIPLINES} />
         </div>
       </section>
@@ -139,16 +124,10 @@ export default function HomePage() {
       {/* ───────────────────────────────────────── audiences ── */}
       <section className="relative scroll-mt-24">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-          <FadeIn>
-            <div className="mb-12 max-w-2xl">
-              <p className="text-eyebrow uppercase tracking-eyebrow text-link">
-                Who we work with
-              </p>
-              <h2 className="mt-3 font-display text-3xl font-bold text-ink sm:text-4xl">
-                Different industries, the same underlying problem
-              </h2>
-            </div>
-          </FadeIn>
+          <SectionHeading
+            eyebrow="Who we work with"
+            title="Different industries, the same underlying problem"
+          />
           <AudiencesShowcase items={AUDIENCES} />
         </div>
       </section>

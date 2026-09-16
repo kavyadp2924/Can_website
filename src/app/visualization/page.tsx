@@ -5,13 +5,12 @@ import {
   Eyebrow,
   FeatureGrid,
   GradientText,
-  PrimaryLink,
-  SecondaryLink,
   Section,
   StickySectionNav,
 } from '@/components/ui';
+import { FeatureHero } from '@/components/feature-hero';
 import { FadeIn } from '@/components/motion';
-import { Reveal, ScrollBackdrop } from '@/components/motion-primitives';
+import { CardReveal, Reveal, ScrollBackdrop, SpotlightCard } from '@/components/motion-primitives';
 import {
   CAPABILITIES,
   PROJECTS,
@@ -66,30 +65,24 @@ function Workflow({ steps }: { steps: string[] }) {
 export default function VisualizationPage() {
   return (
     <>
-      {/* ─────────────────────────────────────────────── opening ── */}
-      <section className="relative overflow-hidden border-b border-hairline bg-ctpl-hero-wash bg-surface-subtle">
-        <ScrollBackdrop />
-        <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28">
-          <Eyebrow>3D Architectural Visualization &amp; Immersive Experiences</Eyebrow>
-          <h1 className="mt-4 max-w-3xl font-display text-display font-bold leading-[1.1] text-ink sm:text-display-lg">
-            Bringing architectural concepts{' '}
-            <GradientText>to life.</GradientText>
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-secondary">
-            We transform architectural drawings, floor plans and design concepts into immersive
-            digital experiences — 3D modelling, interior and exterior visualisation, landscape
-            development, realistic rendering, animation and interactive experiences.
-          </p>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-muted">
-            Built on industry-leading real-time technology — Unreal Engine and Unity — for
-            high-quality walkthroughs, interactive environments and virtual presentations.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3.5">
-            <PrimaryLink href="#projects">See the projects</PrimaryLink>
-            <SecondaryLink href="/contact/">Discuss a project</SecondaryLink>
-          </div>
-        </div>
-      </section>
+      {/* The hero had no visual at all — just copy on an empty wash. It now runs
+          through the shared FeatureHero, so it gets the same load sequence as
+          every other capability page plus the `architecture` scene: footprints
+          on a plan grid extruding into massing, which is the 2D-to-3D move this
+          page is selling. Copy is unchanged. */}
+      <FeatureHero
+        eyebrow="3D Architectural Visualization & Immersive Experiences"
+        title="Bringing architectural concepts"
+        accent="to life."
+        lede="We transform architectural drawings, floor plans and design concepts into immersive digital experiences — 3D modelling, interior and exterior visualisation, landscape development, realistic rendering, animation and interactive experiences."
+        body={[
+          'Built on industry-leading real-time technology — Unreal Engine and Unity — for high-quality walkthroughs, interactive environments and virtual presentations.',
+        ]}
+        variant="architecture"
+        primary={{ href: '#projects', label: 'See the projects' }}
+        secondary={{ href: '/contact/', label: 'Discuss a project' }}
+        readout={['Plan · extruding', 'blocks 4 · grid 0.5m']}
+      />
 
       {/* ────────────────────────────────────────────── projects ── */}
       <StickySectionNav
@@ -108,10 +101,10 @@ export default function VisualizationPage() {
       >
         <div className="space-y-6">
           {PROJECTS.map((project, index) => (
-            <FadeIn key={project.id} delay={index * 90}>
+            <CardReveal key={project.id} delay={index * 90}>
               <article
                 id={project.id}
-                className="scroll-mt-36 overflow-hidden rounded-xl border border-hairline bg-white shadow-card"
+                className="group scroll-mt-36 overflow-hidden rounded-xl border border-hairline bg-white shadow-card transition-[box-shadow,border-color,background-color,transform] duration-ui ease-ctpl-out hover:border-card-hover-edge hover:bg-card-hover hover:shadow-raised motion-safe:hover:scale-[1.008]"
               >
                 <span aria-hidden="true" className="block h-0.5 bg-ctpl-gradient" />
 
@@ -163,7 +156,7 @@ export default function VisualizationPage() {
                   </div>
                 </div>
               </article>
-            </FadeIn>
+            </CardReveal>
           ))}
         </div>
       </Section>
@@ -203,29 +196,33 @@ export default function VisualizationPage() {
             { name: 'Unreal Engine', items: UNREAL, accent: 'from-brand-red' },
             { name: 'Unity', items: UNITY, accent: 'from-brand-blue' },
           ].map((engine, index) => (
-            <FadeIn key={engine.name} delay={index * 90}>
-              <article className="h-full overflow-hidden rounded-xl border border-hairline bg-white p-7 shadow-card">
-                <span
-                  aria-hidden="true"
-                  className={`mb-5 block h-0.5 bg-gradient-to-r ${engine.accent} to-transparent`}
-                />
-                <h3 className="font-display text-xl font-semibold text-ink">{engine.name}</h3>
-                <ul className="mt-4 space-y-2.5">
-                  {engine.items.map((item) => (
-                    <li
-                      key={item}
-                      className="flex gap-2.5 text-sm leading-relaxed text-ink-secondary"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-blue"
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </FadeIn>
+            <CardReveal key={engine.name} delay={index * 90} className="h-full">
+              <SpotlightCard className="h-full">
+                <article className="h-full overflow-hidden rounded-xl border border-hairline bg-white p-7 shadow-card transition-[box-shadow,border-color,background-color] duration-ui group-hover:border-card-hover-edge group-hover:bg-card-hover group-hover:shadow-raised">
+                  <span
+                    aria-hidden="true"
+                    className={`mb-5 block h-0.5 bg-gradient-to-r ${engine.accent} to-transparent`}
+                  />
+                  <h3 className="font-display text-xl font-semibold text-ink transition-colors duration-ui group-hover:text-link">
+                    {engine.name}
+                  </h3>
+                  <ul className="mt-4 space-y-2.5">
+                    {engine.items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex gap-2.5 text-sm leading-relaxed text-ink-secondary"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-brand-blue"
+                        />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </SpotlightCard>
+            </CardReveal>
           ))}
         </div>
       </Section>

@@ -49,6 +49,8 @@ export default {
         },
         hairline: 'var(--ctpl-hairline)',
         'border-strong': 'var(--ctpl-border-strong)',
+        'card-hover': 'var(--ctpl-card-hover-bg)',
+        'card-hover-edge': 'var(--ctpl-card-hover-border)',
         link: {
           DEFAULT: 'var(--ctpl-link)',
           hover: 'var(--ctpl-link-hover)',
@@ -72,6 +74,7 @@ export default {
 
       backgroundImage: {
         'ctpl-gradient': 'var(--ctpl-gradient)',
+        'ctpl-fill': 'var(--ctpl-gradient-fill)',
         'ctpl-hero-wash': 'var(--ctpl-hero-wash)',
       },
 
