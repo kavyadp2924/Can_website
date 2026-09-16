@@ -13,28 +13,11 @@ import { Analytics } from '@/components/analytics';
  */
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
-/**
- * Headline face. `swap` so headings paint immediately, with a hand-measured
- * fallback (`CTPL Display Fallback` in globals.css) so the swap moves nothing.
- *
- * next/font's generated fallback sized Arial up to 109.69%, derived from the
- * regular weight — but every Space Grotesk string on this site is bold, and bold
- * Space Grotesk measures ~90% the width of bold Arial. Fallback headlines ran
- * ~20% too wide, wrapped onto extra lines, then snapped back when the real font
- * landed: on a phone the Work heading went from three lines to two and shoved
- * the gallery up 52px (a 0.22 layout-shift score, on every single load).
- *
- * `optional` and `block` were both measured and rejected: `optional` rendered
- * headlines in Arial on every first visit, and `block` still laid the heading
- * out in fallback metrics while invisible, so the page shifted just the same.
- */
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   variable: '--font-space-grotesk',
   display: 'swap',
-  adjustFontFallback: false,
-  fallback: ['CTPL Display Fallback'],
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://canorous.com';
